@@ -28,7 +28,7 @@ This file must exist and readable for the galaxy-prep.rb script. Invoke the scri
 This creates the galaxy environment in the base folder above. Then start the galaxy environment using
 
 % cd /home/henning/galaxy
-% .eval `/start-galaxy.sh`
+% eval `./start-galaxy.sh`
 export GALAXY_CONFIG=/home/henning/galaxy/config/galaxy.conf
 % galaxy show 
 machine-s0   development -                                             unknown    -                                        -                    machine.local  -               online  
