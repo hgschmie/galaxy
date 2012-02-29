@@ -147,10 +147,8 @@ module Galaxy
       jvm_files.each do |lines|
         lines.each do |line|
           unless line =~ /^\s*\#/
-            line.split(' ').each do |element|
-              key,*values = element.split("=")
-              jvm_lines[key.strip] = (values.length == 0) ? nil : values.join("=").strip
-            end
+            key,*values = line.split("=")
+            jvm_lines[key.strip] = (values.length == 0) ? nil : values.join("=").strip
           end
         end
       end
