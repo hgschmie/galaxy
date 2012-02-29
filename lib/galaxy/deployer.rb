@@ -57,7 +57,7 @@ module Galaxy
             if File.exists? current
                 File.unlink(current)
             end
-            FileUtils.ln_sf core_base, current
+            FileUtils.ln_sf(number.to_s, current)
             return core_base
         end
 
@@ -78,7 +78,7 @@ module Galaxy
             FileUtils.rm_rf File.join(@base, number.to_s)
 
             core_base = File.join(@base, (number - 1).to_s)
-            FileUtils.ln_sf core_base, current
+            FileUtils.ln_sf((number - 1).to_s, current)
 
             return core_base
         end
