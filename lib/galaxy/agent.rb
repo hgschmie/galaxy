@@ -58,7 +58,6 @@ module Galaxy
             FileUtils.mkdir_p(data_dir) unless File.exists? data_dir
 
             @announce_interval = announce_interval
-            @prop_builder = Galaxy::Properties::Builder.new repository_base, @http_user, @http_password, @logger
             @repository = Galaxy::Repository.new repository_base, @logger
             @db = Galaxy::DB.new data_dir
             @slot_info = Galaxy::SlotInfo.new @db, repository_base, binaries_base, @logger, @machine, @agent_id, @agent_group, @slot_environment
