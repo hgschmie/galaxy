@@ -4,7 +4,7 @@ require 'tmpdir'
 require 'rake'
 require 'rake/testtask'
 require 'rake/clean'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'lib/galaxy/version'
 begin
     require 'rcov/rcovtask'
@@ -81,10 +81,9 @@ spec = Gem::Specification.new do |s|
   s.add_dependency("rcov", ">= 0.9.9")
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
+Gem::PackageTask.new(spec) do |pkg|
   pkg.need_zip = false
-  pkg.tar_command = 'gtar' if RUBY_PLATFORM =~ /solaris/
-  pkg.need_tar = true
+  pkg.need_tar = false
 end
 
 namespace :run do
