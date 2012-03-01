@@ -20,7 +20,8 @@ module Galaxy
                 build_version = Galaxy::BuildVersion.new_from_options req_build_version
 
                 if build_version.nil?
-                  build_version = Galaxy::BuildProperties.new_from_config(@logger, @prop_builder, requested_config)
+                  prop_builder = Galaxy::Properties::Builder.new config_uri.nil? ? @repository_base : config_uri, @http_user, @http_password, @logger
+                  build_version = Galaxy::BuildProperties.new_from_config(@logger, prop_builder, requested_config)
                   build_version.validate_os(@os)
                 end
 
