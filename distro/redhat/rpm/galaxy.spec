@@ -38,7 +38,7 @@ Galaxy is a lightweight software deployment and management tool used to manage t
 mkdir -p %{buildroot}/var/cache/gem
 cp %{gem} %{buildroot}/var/cache/gem
 mkdir -p %{buildroot}/etc/rc.d/init.d
-cp -r distroredhat/etc/rc.d/init.d/* %{buildroot}/etc/rc.d/init.d
+cp -r distro/redhat/etc/rc.d/init.d/* %{buildroot}/etc/rc.d/init.d
 find %{buildroot}/etc/rc.d/init.d -type f | xargs chmod a+x
 
 %clean
