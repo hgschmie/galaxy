@@ -1,5 +1,6 @@
 # encoding: utf-8
-$:.unshift File.dirname(__FILE__)
+$:.unshift File.join(File.dirname(__FILE__), 'lib', 'galaxy')
+require 'version'
 
 require 'rubygems'
 require 'bundler'
@@ -12,7 +13,6 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
-require 'lib/galaxy/version'
 PACKAGE_NAME = 'galaxy'
 PACKAGE_VERSION = Galaxy::Version
 GEM_VERSION = PACKAGE_VERSION.split('-')[0]
@@ -89,7 +89,8 @@ end
 
 namespace :package do
   desc "Build an RPM package"
-  task :rpm => :versioned_gem do
+  task :rpm => :gemspec do
+    `gem build galaxy.gemspec`
     build_dir = "/tmp/galaxy-package"
     rpm_dir = "/tmp/galaxy-rpm"
     rpm_version = PACKAGE_VERSION
@@ -104,7 +105,7 @@ namespace :package do
     # You can tweak the rpm as follow:
     #`rpmbuild --target=noarch -v --define "_gonsole_url gonsole.company.com" --define "_gepo_url http://gepo.company.com/config/trunk/prod" --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb build/rpm/galaxy.spec` || raise("Failed to create package")
 
-    FileUtils.cp("#{rpm_dir}/noarch/#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm", "pkg/#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm")
+    FileUtils.cp("#{rpm_dir}/noarch/#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm", "#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm")
     FileUtils.rm_rf(build_dir)
     FileUtils.rm_rf(rpm_dir)
   end
