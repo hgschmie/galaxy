@@ -1,91 +1,67 @@
+# encoding: utf-8
+$:.unshift File.dirname(__FILE__)
+
 require 'rubygems'
-require 'fileutils'
-require 'tmpdir'
-require 'rake'
-require 'rake/testtask'
-require 'rake/clean'
-require 'rake/gempackagetask'
-require 'lib/galaxy/version'
+require 'bundler'
 begin
-    require 'rcov/rcovtask'
-    $RCOV_LOADED = true
-rescue LoadError
-    $RCOV_LOADED = false
-    puts "Unable to load rcov"
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
 end
+require 'rake'
 
-THIS_FILE = File.expand_path(__FILE__)
-PWD = File.dirname(THIS_FILE)
-RUBY = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
-
+require 'lib/galaxy/version'
 PACKAGE_NAME = 'galaxy'
 PACKAGE_VERSION = Galaxy::Version
 GEM_VERSION = PACKAGE_VERSION.split('-')[0]
 
-task :default => [:test]
+require 'jeweler'
+Jeweler::Tasks.new do |gem|
+  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
+  gem.name = PACKAGE_NAME
+  gem.version = GEM_VERSION
+  gem.homepage = "http://github.com/henning/galaxy"
+  gem.summary = %Q{Galaxy is a lightweight software deployment and management tool.}
+  gem.description = %Q{Galaxy}
+  gem.email = "henning@trumpet.io"
+  gem.author = "Trumpet Technologies"
+  # dependencies defined in Gemfile
+end
+Jeweler::RubygemsDotOrgTasks.new
 
-task :install do
-  sitelibdir = Config::CONFIG["sitelibdir"]
-  cd 'lib' do
-    for file in Dir["galaxy/*.rb", "galaxy/commands/*.rb" ]
-      d = File.join(sitelibdir, file)
-      mkdir_p File.dirname(d)
-      install(file, d)
-    end
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.pattern = 'test/test*.rb'
+  test.libs << 'test'
+  test.verbose = true
+end
+
+if RUBY_VERSION =~ /^1\.9/
+  desc "Code coverage detail"
+  task :simplecov do
+    ENV['COVERAGE'] = "true"
+    Rake::Task['test'].execute
   end
-
-  bindir = Config::CONFIG["bindir"]
-  cd 'bin' do
-    for file in ["galaxy", "galaxy-agent", "galaxy-console" ]
-      d = File.join(bindir, file)
-      mkdir_p File.dirname(d)
-      install(file, d)
-    end
+else
+  require 'rcov/rcovtask'
+  Rcov::RcovTask.new do |test|
+    test.libs << 'test'
+    test.pattern = 'test/test*.rb'
+    test.verbose = true
+    test.rcov_opts << '--exclude "gems/*"'
   end
 end
 
+task :default => :test
 
-Rake::TestTask.new("test") do |t|
-  t.pattern = 'test/test*.rb'
-  t.libs << 'test'
-  t.warning = true
-end
+require 'fileutils'
+require 'tmpdir'
+require 'rake/clean'
 
-if $RCOV_LOADED
-    Rcov::RcovTask.new do |t|
-      t.pattern = 'test/test*.rb'
-      t.libs << 'test'
-      t.rcov_opts = ['--exclude', 'gems/*', '--text-report']
-    end
-end
-
-Rake::PackageTask.new(PACKAGE_NAME, PACKAGE_VERSION) do |p|
-  p.tar_command = 'gtar' if RUBY_PLATFORM =~ /solaris/
-  p.need_tar = true
-  p.package_files.include(["lib/galaxy/**/*.rb", "bin/*"])
-end
-
-spec = Gem::Specification.new do |s|
-  s.name = PACKAGE_NAME
-  s.version = GEM_VERSION
-  s.author = "Trumpet Technologies"
-  s.email = "henning@trumpet.io"
-  s.homepage = "http://github.com/henning/galaxy"
-  s.platform = Gem::Platform::RUBY
-  s.summary = "Galaxy is a lightweight software deployment and management tool."
-  s.files =  FileList["lib/galaxy/**/*.rb", "bin/*"]
-  s.executables = FileList["galaxy-agent", "galaxy-console", "galaxy"]
-  s.require_path = "lib"
-  s.add_dependency("json", ">= 1.5.1")
-  s.add_dependency("mongrel", ">= 1.1.5")
-  s.add_dependency("rcov", ">= 0.9.9")
-end
-
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.need_zip = false
-  pkg.tar_command = 'gtar' if RUBY_PLATFORM =~ /solaris/
-  pkg.need_tar = true
-end
+PWD = File.expand_path(File.dirname(__FILE__))
+RUBY = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
 
 namespace :run do
   desc "Run a Gonsole locally"
@@ -108,14 +84,6 @@ namespace :run do
            "-b", "http://localhost/binaries",
            "-d", "/tmp/deploy", "-x", "/tmp/extract",
            "--announce-interval", "10", "-f", "-l", "STDOUT", "-L", "DEBUG", "-v")
-  end
-end
-
-desc "Build a Gem with the full version number"
-task :versioned_gem => :gem do
-  gem_version = PACKAGE_VERSION.split('-')[0]
-  if gem_version != PACKAGE_VERSION
-    FileUtils.mv("pkg/#{PACKAGE_NAME}-#{gem_version}.gem", "pkg/#{PACKAGE_NAME}-#{PACKAGE_VERSION}.gem")
   end
 end
 
