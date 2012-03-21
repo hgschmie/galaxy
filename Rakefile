@@ -101,7 +101,7 @@ namespace :package do
     FileUtils.rm_rf(rpm_dir)
     FileUtils.mkdir_p(rpm_dir)
 
-    `rpmbuild --target=noarch -v --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb build/rpm/galaxy.spec` || raise("Failed to create package")
+    `rpmbuild --target=noarch -v --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb distro/redhat/rpm/galaxy.spec` || raise("Failed to create package")
     # You can tweak the rpm as follow:
     #`rpmbuild --target=noarch -v --define "_gonsole_url gonsole.company.com" --define "_gepo_url http://gepo.company.com/config/trunk/prod" --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb build/rpm/galaxy.spec` || raise("Failed to create package")
 
