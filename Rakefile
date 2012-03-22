@@ -2,7 +2,6 @@
 $:.unshift File.join(File.dirname(__FILE__), 'lib', 'galaxy')
 require 'version'
 
-require 'rubygems'
 require 'bundler'
 begin
   Bundler.setup(:default, :development)
@@ -33,9 +32,10 @@ Jeweler::RubygemsDotOrgTasks.new
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
-  test.pattern = 'test/test*.rb'
-  test.libs << 'test'
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/test_*.rb'
   test.verbose = true
+  
 end
 
 if RUBY_VERSION =~ /^1\.9/
@@ -91,6 +91,7 @@ namespace :package do
   desc "Build an RPM package"
   task :rpm => :gemspec do
     `gem build galaxy.gemspec`
+    `gem install galaxy-#{PACKAGE_VERSION}`
     build_dir = "/tmp/galaxy-package"
     rpm_dir = "/tmp/galaxy-rpm"
     rpm_version = PACKAGE_VERSION
