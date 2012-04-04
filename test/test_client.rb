@@ -25,11 +25,6 @@ class TestClient < Test::Unit::TestCase
     end
   end
 
-  def test_usage_with_no_arguments
-    output = `#{@galaxy} 2>&1`
-    assert_match("Error: Missing command", output)
-  end
-
   def test_show_with_no_console
     output = `#{@galaxy} show 2>&1`
     assert_match("Error: Cannot determine console host", output)
