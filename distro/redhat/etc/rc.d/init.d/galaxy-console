@@ -26,7 +26,7 @@ prog=$(basename $galaxy_console)
 
 start() {
   echo -n $"Starting Galaxy Console: "
-  su - $GALAXY_USER -c "$galaxy_console --start" && success || failure $"$prog start"
+  su - $GALAXY_USER -c "$galaxy_console --start" >/dev/null 2>&1 && success || failure $"$prog start"
   retval=$?
   echo
   return $retval
@@ -34,7 +34,7 @@ start() {
 
 stop() {
   echo -n $"Shutting down Galaxy Console: "
-  su - $GALAXY_USER -c "$galaxy_console --stop" && success || failure $"$prog stop"
+  su - $GALAXY_USER -c "$galaxy_console --stop" >/dev/null 2>&1 && success || failure $"$prog stop"
   retval=$?
   echo
   return $retval  

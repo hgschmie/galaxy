@@ -19,7 +19,7 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-GALAXY_CONFIG="/etc/galaxy.conf"
+GALAXY_CONFIG="/etc/galaxy-agent.conf"
 GALAXY_USER=`ruby -ryaml -e "puts YAML.load(File.open('$GALAXY_CONFIG'))['galaxy.agent.user'] || ''"`
 
 galaxy_agent="/usr/bin/galaxy-agent"
@@ -27,7 +27,7 @@ prog=$(basename $galaxy_agent)
 
 start() {
   echo -n $"Starting Galaxy Agent: "
-  su - $GALAXY_USER -c "$galaxy_agent --start" && success || failure $"$prog start"
+  su - $GALAXY_USER -c "$galaxy_agent --start" >/dev/null 2>&1 && success || failure $"$prog start"
   retval=$?
   echo
   return $retval
@@ -35,7 +35,7 @@ start() {
 
 stop() {
   echo -n $"Stopping Galaxy Agent: "
-  su - $GALAXY_USER -c "$galaxy_agent --stop" && success || failure $"$prog stop"
+  su - $GALAXY_USER -c "$galaxy_agent --stop" >/dev/null 2>&1 && success || failure $"$prog stop"
   retval=$?
   echo
   return $retval  
