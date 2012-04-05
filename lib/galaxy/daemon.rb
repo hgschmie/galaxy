@@ -123,7 +123,8 @@ module Galaxy
       Galaxy::HostUtils::switch_user(user) unless user.nil?
       if daemon_running?(pid_file)
         pid = pid_for(pid_file)
-        abort("Error: #{name} is already running as pid #{pid}")
+        puts "#{name} is already running as pid #{pid}"
+        exit 0
       end
       Daemon.new(& block).go(pid_file, log)
     end
