@@ -21,6 +21,7 @@
 
 GALAXY_CONFIG="/etc/galaxy-agent.conf"
 GALAXY_USER=`ruby -ryaml -e "puts YAML.load(File.open('$GALAXY_CONFIG'))['galaxy.agent.user'] || ''"`
+GALAXY_PID=`ruby -ryaml -e "puts YAML.load(File.open('$GALAXY_CONFIG'))['galaxy.agent.pid-file'] || ''"`
 
 galaxy_agent="/usr/bin/galaxy-agent"
 prog=$(basename $galaxy_agent)
@@ -48,7 +49,7 @@ restart() {
 }
 
 rh_status() {
-  status $prog
+  status -p $GALAXY_PID $prog
 }
 
 rh_status_q() {
