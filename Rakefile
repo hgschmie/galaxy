@@ -25,7 +25,7 @@ Jeweler::Tasks.new do |gem|
   gem.summary = %Q{Galaxy is a lightweight software deployment and management tool.}
   gem.description = %Q{Galaxy}
   gem.email = "henning@trumpet.io"
-  gem.author = "Trumpet Technologies"
+  gem.authors = ["Trumpet Technologies"]
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
