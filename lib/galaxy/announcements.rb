@@ -3,6 +3,7 @@ require 'uri'
 require 'yaml'
 require 'ostruct'
 require 'logger'
+require 'rubygems'
 
 begin
   require 'mongrel'

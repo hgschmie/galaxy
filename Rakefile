@@ -2,6 +2,7 @@
 $:.unshift File.join(File.dirname(__FILE__), 'lib', 'galaxy')
 require 'version'
 
+require 'rubygems'
 require 'bundler'
 begin
   Bundler.setup(:default, :development)
