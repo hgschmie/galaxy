@@ -3,6 +3,7 @@
 require 'optparse'
 require 'resolv'
 require 'timeout'
+require 'rubygems'
 
 require 'galaxy/client'
 require 'galaxy/command'
