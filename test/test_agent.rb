@@ -27,9 +27,7 @@ class TestAgent < Test::Unit::TestCase
     # Hack the environment to allow the spawned scripts to find galaxy/scripts
     ENV["RUBYLIB"] =  File.join(File.dirname(__FILE__), "..", "lib")
 
-    webrick_logger =  Logger.new(STDOUT)
-    webrick_logger.level = Logger::WARN
-    @server = WEBrick::HTTPServer.new(:Port => 8000, :Logger => webrick_logger)
+    @server = WEBrick::HTTPServer.new(:Port => 8000, :BindAddress => "127.0.0.1")
 
     # Replies on POST from agent
     @server.mount_proc("/") do |request, response|
