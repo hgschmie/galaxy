@@ -2,6 +2,7 @@ require 'optparse'
 require 'yaml'
 require 'ostruct'
 
+require 'rubygems'
 require 'galaxy/repository'
 
 #

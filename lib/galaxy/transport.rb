@@ -118,7 +118,7 @@ module Galaxy
       begin
          @servers[url] = Galaxy::HTTPServer.new(url, obj)
       rescue NameError
-         raise NameError.new("Unable to create the http server. Is mongrel installed?")
+         raise NameError.new("Unable to create the http server.")
       end
       return @servers[url]
     end

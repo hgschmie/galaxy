@@ -1,5 +1,7 @@
 require 'ostruct'
 require 'logger'
+
+require 'rubygems'
 require 'galaxy/filter'
 require 'galaxy/transport'
 

@@ -1,15 +1,9 @@
 require 'ostruct'
 require 'logger'
-begin
-    # We don't install the json gem by default on our machines.
-    # Not critical, since it is for the HTTP API that will be rolled in the future
-    require 'json'
-    $JSON_LOADED = true
-rescue LoadError
-    $JSON_LOADED = false
-end
 require 'resolv'
 
+require 'rubygems'
+require 'json'
 require 'galaxy/filter'
 require 'galaxy/log'
 require 'galaxy/transport'
@@ -96,11 +90,7 @@ module Galaxy
       # "prod-1.company.com"}
       filters = {}
       CGI::parse(query_string).each { |k, v| filters[k.to_sym] = v.first }
-      if $JSON_LOADED
-        return agents(filters).to_json
-      else
-        return agents(filters).inspect
-      end
+      return agents(filters).to_json
     end
 
     def Console.start args

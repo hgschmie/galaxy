@@ -1,5 +1,6 @@
 require 'logger'
 require 'socket'
+require 'rubygems'
 require 'galaxy/host'
 
 module Galaxy

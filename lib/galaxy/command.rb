@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'galaxy/agent_utils'
 require 'galaxy/report'
 

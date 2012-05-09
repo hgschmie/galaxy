@@ -3,21 +3,10 @@ require 'uri'
 require 'yaml'
 require 'ostruct'
 require 'logger'
+
 require 'rubygems'
-
-begin
-  require 'mongrel'
-  $MONGREL_LOADED = true
-rescue LoadError
-  $MONGREL_LOADED = false
-end
-
-begin
-  require 'json'
-  $JSON_LOADED = true
-rescue LoadError
-  $JSON_LOADED = false
-end
+require 'thin'
+require 'json'
 
 module Galaxy
   module HTTPUtils
@@ -34,101 +23,101 @@ module Galaxy
     end
   end
 
-  if $MONGREL_LOADED
-      class HTTPServer
-        def initialize(url, console, callbacks=nil, log=nil)
-          @log = log || Logger.new(STDOUT)
-
-          # Create server
-          begin
-            @server = Mongrel::HttpServer.new("0.0.0.0", get_port(url))
-          rescue Exception => err
-            msg = "HTTP server initialization error: #{err}"
-            @log.error msg
-            raise IOError, msg
-          end
-
-          @server.register("/", ReceiveAnnouncement.new(console), true)
-          @server.register("/status", AnnouncementStatus.new, true)
-
-          # Actually start the server
-          @thread = Thread.new do
-            begin
-              @server.run.join
-            rescue Exception => err
-              msg = "HTTP server start error: #{err}"
-              @log.error msg
-              raise msg
-            end
-          end
-        end
-
-        # parse the port from the given url string
-        def get_port(url)
-          begin
-            last = url.count(':')
-            raise "malformed url: '#{url}'." if last==0 || last>2
-            port = url.split(':')[last].to_i
-          rescue Exception => err
-            msg = "Problem parsing port for string '#{url}': error = #{err}"
-            @log.error msg
-            raise msg
-          end
-          port
-        end
-
-        def shutdown
-          if @server
-            @server.stop
-            @server.graceful_shutdown
-            @thread.join
-            @server = @thread = nil
-          end
-        end
+  class HTTPServer
+    def initialize(url, console, callbacks=nil, log=nil)
+      @log = log || Logger.new(STDOUT)
+      
+      app = Rack::URLMap.new(
+        '/' => ReceiveAnnouncement.new(console),
+        '/status' => AnnouncementStatus.new)
+      
+      # Create server
+      begin
+        @server = Thin::Server.new('0.0.0.0', get_port(url), app)
+      rescue Exception => err
+        msg = "HTTP server initialization error: #{err}"
+        @log.error msg
+        raise IOError, msg
       end
 
-
-      # POST handler that receives announcements and calls the callback function with the data payload
-      class ReceiveAnnouncement < Mongrel::HttpHandler
-        ANNOUNCEMENT_RESPONSE_TEXT = 'Announcement received.'
-
-        def initialize(console)
-          @console = console
-        end
-
-        def process(request, response)
-          response.start(200) do |head, out|
-            head['Context-Type'] = 'text/plain; charset=utf-8'
-            head['Connection'] = 'close'
-            if request.params['REQUEST_METHOD'] == 'POST'
-              @console.process_post(YAML::load(request.body))
-              out.write ANNOUNCEMENT_RESPONSE_TEXT
-            elsif request.params['REQUEST_METHOD'] == 'GET'
-              out.write @console.process_get(request.params['REQUEST_PATH'])
-            end
-          end
+      # Actually start the server
+      @thread = Thread.new do
+        begin
+          @server.start!
+        rescue Exception => err
+          msg = "HTTP server start error: #{err}"
+          @log.error msg
+          raise msg
         end
       end
+      sleep 1
+    end
 
-      # optional GET response for querying the server status
-      class AnnouncementStatus < Mongrel::HttpHandler
-        def process(request, response)
-          if request.params['REQUEST_METHOD'] == 'GET'
-            response.start(200) do |head, out|
-              head['Context-Type'] = 'text/plain; charset=utf-8'
-              head['Connection'] = 'close'
-              time = Time.now
-              body = "<html><body>"
-              body += "<h2>Announcement Status </h2> <br /><br />";
-              body += time.strftime("%Y%m%d-%H:%M:%S") + sprintf(".%06d", time.usec)
-              body += "</body></html>"
-              out.write body
-            end
-          end
-        end
+    # parse the port from the given url string
+    def get_port(url)
+      begin
+        last = url.count(':')
+        raise "malformed url: '#{url}'." if last==0 || last>2
+        port = url.split(':')[last].to_i
+      rescue Exception => err
+        msg = "Problem parsing port for string '#{url}': error = #{err}"
+        @log.error msg
+        raise msg
       end
-    
+      port
+    end
+
+    def shutdown
+      if @server
+        @server.stop!
+        @thread.join
+        @server = @thread = nil
+      end
+    end
   end
+
+  # POST handler that receives announcements and calls the callback function with the data payload
+  class ReceiveAnnouncement
+    ANNOUNCEMENT_RESPONSE_TEXT = 'Announcement received.'
+    def initialize(console)
+      @console = console
+    end
+  
+    def call(env)
+      response = ""
+      if env['REQUEST_METHOD'] == 'POST'
+        @console.process_post(YAML::load(env['rack.input'].read))
+        response << ANNOUNCEMENT_RESPONSE_TEXT
+      elsif env['REQUEST_METHOD'] == 'GET'
+        response << @console.process_get(env['REQUEST_PATH'])
+      end
+      [ 
+        200, 
+        { 'Content-Type' => 'text/plain; charset=utf-8', 'Connection' => 'close' }, 
+        [response] 
+      ]
+    end
+  end
+
+  # optional GET response for querying the server status
+  class AnnouncementStatus
+    def call(env)
+      if env['REQUEST_METHOD'] == 'GET'
+        time = Time.now
+        response = ""
+        response << "<html><body>"
+        response << "<h2>Announcement Status</h2><br /><br />"
+        response << time.strftime("%Y%m%d-%H:%M:%S") + sprintf(".%06d", time.usec)
+        response << "</body></html>"
+        [
+          200,
+          { 'Content-Type' => 'text/plain; charset=utf-8', 'Connection' => 'close' },
+          [response]
+        ]
+      end
+    end
+  end
+
 end
 
 # HTTP client library.

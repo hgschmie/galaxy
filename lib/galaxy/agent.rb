@@ -6,6 +6,7 @@ require 'socket'
 require 'stringio'
 require 'yaml'
 
+require 'rubygems'
 require 'galaxy/agent_remote_api'
 require 'galaxy/config'
 require 'galaxy/controller'
