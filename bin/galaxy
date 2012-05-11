@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
 require 'optparse'
 require 'resolv'
 require 'timeout'
+require 'rubygems'
 
 require 'galaxy/client'
 require 'galaxy/command'
@@ -97,6 +97,7 @@ require 'galaxy/versioning'
     begin
         @original_args = ARGV.join(" ")
         @args = opts.parse! ARGV
+        @args << "help" if @args.empty?
         @filter[:command] = @original_args
     rescue Exception => msg
         puts opts

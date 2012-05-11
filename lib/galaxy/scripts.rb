@@ -2,6 +2,7 @@ require 'optparse'
 require 'yaml'
 require 'ostruct'
 
+require 'rubygems'
 require 'galaxy/repository'
 
 #
@@ -143,14 +144,12 @@ module Galaxy
       repository =   Galaxy::Repository.new config_location
       jvm_files = repository.walk(config_path, 'jvm.properties')
       jvm_lines = {}
-
-      jvm_files.each do |lines|
-        lines.each do |line|
-          unless line =~ /^\s*\#/
-            line.split(' ').each do |element|
-              key,*values = element.split("=")
-              jvm_lines[key.strip] = (values.length == 0) ? nil : values.join("=").strip
-            end
+  
+      jvm_files.each do |line|
+        unless line =~ /^\s*\#/
+          line.split(' ').each do |element|
+            key,*values = element.split("=")
+            jvm_lines[key.strip] = (values.length == 0) ? nil : values.join("=").strip
           end
         end
       end

@@ -1,0 +1,84 @@
+#!/bin/sh
+#
+# galaxy-agent - this script starts and stops the galaxy-agent daemon
+#
+# chkconfig:    2345 80 90
+# description:  Activates/Deactivates Galaxy agent
+# processname:  galaxy-agent
+# config:       /etc/galaxy.conf
+#
+# Required-Start:     $remote_fs $syslog
+# Required-Stop:      $remote_fs $syslog
+# Should-Start:       $galaxy-console
+# Should-Stop:        $galaxy-console
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  Start Galaxy agent.
+# Description:        Start Galaxy agent.
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+GALAXY_CONFIG="/etc/galaxy-agent.conf"
+GALAXY_USER=`ruby -ryaml -e "puts YAML.load(File.open('$GALAXY_CONFIG'))['galaxy.agent.user'] || ''"`
+GALAXY_PID=`ruby -ryaml -e "puts YAML.load(File.open('$GALAXY_CONFIG'))['galaxy.agent.pid-file'] || ''"`
+
+galaxy_agent="/usr/bin/galaxy-agent"
+prog=$(basename $galaxy_agent)
+
+start() {
+  echo -n $"Starting Galaxy Agent: "
+  su - $GALAXY_USER -c "$galaxy_agent --start" >/dev/null 2>&1 && success || failure $"$prog start"
+  retval=$?
+  echo
+  return $retval
+}
+
+stop() {
+  echo -n $"Stopping Galaxy Agent: "
+  su - $GALAXY_USER -c "$galaxy_agent --stop" >/dev/null 2>&1 && success || failure $"$prog stop"
+  retval=$?
+  echo
+  return $retval  
+}
+
+restart() {
+  stop
+  sleep 2
+  start
+}
+
+rh_status() {
+  status -p $GALAXY_PID $prog
+}
+
+rh_status_q() {
+  rh_status >/dev/null 2>&1
+}
+
+if [ -z "$GALAXY_USER" ]; then
+  echo -n "Error: Unable to determine galaxy agent user." && failure
+  echo
+  echo "Please set the \`galaxy.agent.user\` property in $GALAXY_CONFIG."
+  exit 1
+fi
+
+case "$1" in
+  start)
+      rh_status_q && exit 0
+      $1
+      ;;
+  stop)
+      rh_status_q || exit 0
+      $1
+      ;;
+  restart)
+      $1
+      ;;
+  status|status_q)
+      rh_$1
+      ;;
+  *)
+      echo $"Usage: $0 {start|stop|status|restart}"
+      exit 2
+esac
