@@ -102,9 +102,40 @@ module Galaxy
       @config = config
       @config_from_file = read_config_file(config.config_file)
     end
-    
+
+    # This is a gross hack, that should die rather sooner than later -- hps
     def correct key
-      key.to_s
+      case key
+        # Agent
+      when :agent_url
+        "agent-url"
+      when :agent_id
+        "identifier"
+      when :agent_group
+        "group"
+      when :machine_file
+        "machine-file"
+      when :deploy_dir
+        "deploy-to"
+      when :data_dir
+        "data-dir"
+      when :announce_interval
+        "announce-interval"
+      when :http_user
+        "http-user"
+      when :http_password
+        "http-password"
+      when :slot_environment
+        "slot-environment"
+
+        # Shared opts
+      when :log_level
+        "log-level"
+      when :config_file
+        "config"
+      else
+        key
+      end
     end
 
     def configure
@@ -216,7 +247,26 @@ module Galaxy
     end
 
     def correct key
-      key.to_s
+      case key
+        # Console
+      when :announcement_url
+        "announcement-url"
+      when :ping_interval
+        "ping-interval"
+      when :console_proxied_url
+        "console-proxied-url"
+      when :console_log
+        "console-log"
+
+        # Shared opts
+      when :log_level
+        "log-level"
+      when :config_file
+        "config"
+      else
+        key
+      end
+
     end
 
     def configure
