@@ -22,11 +22,11 @@ Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = PACKAGE_NAME
   gem.version = GEM_VERSION
-  gem.homepage = "http://github.com/henning/galaxy"
+  gem.homepage = "http://github.com/hgschmie/galaxy"
   gem.summary = %Q{Galaxy is a lightweight software deployment and management tool.}
   gem.description = %Q{Galaxy}
-  gem.email = "henning@trumpet.io"
-  gem.authors = ["Trumpet Technologies"]
+  gem.email = "henning@schmiedehausen.org"
+  gem.authors = ["Henning Schmiedehausen"]
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
