@@ -22,7 +22,9 @@ class TestFetcher < Test::Unit::TestCase
     @local_fetcher = Galaxy::Fetcher.new(File.join(File.dirname(__FILE__), "property_data"), nil, nil, Logger.new("/dev/null"))
     @http_fetcher = Galaxy::Fetcher.new("http://localhost:7777", nil, nil, Logger.new("/dev/null"))
 
-    @server = HTTPServer.new(:Port => 7777, :BindAddress => "127.0.0.1")
+    webrick_logger =  Logger.new(STDOUT)
+    webrick_logger.level = Logger::WARN
+    @server = HTTPServer.new(:Port => 7777, :BindAddress => "127.0.0.1", :Logger => webrick_logger)
     @server.mount("/", HTTPServlet::FileHandler, File.join(File.dirname(__FILE__), "property_data"), true)
     Thread.start do
       @server.start
