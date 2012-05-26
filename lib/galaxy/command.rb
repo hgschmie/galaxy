@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'galaxy/agent_utils'
+require 'galaxy/parallelize'
 require 'galaxy/report'
 
 module Galaxy
@@ -67,7 +68,7 @@ module Galaxy
       def execute agents
         report.start
         error_report.start
-        agents.each do |agent|
+        agents.parallelize(@options[:thread_count]) do |agent|
           begin
             unless agent.agent_status == 'online'
               raise "Agent is not online"
