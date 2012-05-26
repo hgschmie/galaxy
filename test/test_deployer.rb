@@ -9,8 +9,11 @@ require 'logger'
 class TestDeployer < Test::Unit::TestCase
   
   def setup
-    @core_package = Tempfile.new("package.tgz").path
-    @bad_core_package = Tempfile.new("bad-package.tgz").path
+    @repo = Helper.mk_tmpdir
+
+    @core_package = File.join(@repo, "core.tar.gz");
+    @bad_core_package = File.join(@repo, "bad.tar.gz");
+
     system %{
       #{Galaxy::HostUtils.tar} -C #{File.join(File.dirname(__FILE__), "core_package")} -czf #{@core_package} . 
     }
