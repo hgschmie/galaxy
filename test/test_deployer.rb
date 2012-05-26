@@ -33,35 +33,30 @@ class TestDeployer < Test::Unit::TestCase
   end
   
   def test_core_base_is_right    
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     assert_equal File.join(@path, "2"), core_base
   end
   
   def test_deployment_dir_is_made
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     assert FileTest.directory?(core_base)
   end
   
   def test_xndeploy_exists_after_deployment
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     assert FileTest.exists?(File.join(core_base, "bin", "xndeploy"))
   end
   
   def test_xndeploy_invoked_on_deploy
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     assert FileTest.exists?(File.join(core_base, "xndeploy_touched_me"))
   end
   
   def test_xndeploy_gets_correct_values
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     dump = File.open(File.join(core_base, "xndeploy_touched_me")) do |file|
@@ -74,7 +69,6 @@ class TestDeployer < Test::Unit::TestCase
   end
   
   def test_current_symlink_created
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(2)
     core_base = @deployer.deploy "2", @core_package, @config
     link = File.join(@path, "current")
@@ -85,7 +79,6 @@ class TestDeployer < Test::Unit::TestCase
   end
   
   def test_upgrade
-    sleep 1
     @slot_info.update @config, @deployer.core_base_for(1)
     first = @deployer.deploy "1", @core_package, @config
     @deployer.activate "1"
@@ -98,7 +91,6 @@ class TestDeployer < Test::Unit::TestCase
   end  
   
   def test_bad_archive
-    sleep 1
     assert_raise RuntimeError do
       @slot_info.update @config, @deployer.core_base_for("bad")
       @deployer.deploy "bad", "/etc/hosts", @config
@@ -106,7 +98,6 @@ class TestDeployer < Test::Unit::TestCase
   end
   
   def test_deploy_script_failure
-    sleep 1
     assert_raise RuntimeError do
       @slot_info.update @config, @deployer.core_base_for("bad")
       @deployer.deploy "bad", @bad_core_package, @config
