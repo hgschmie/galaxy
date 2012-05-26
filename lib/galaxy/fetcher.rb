@@ -20,7 +20,7 @@ module Galaxy
       core_url="#{core_url}/#{build.artifact}-#{build.version}.#{extension}"
 
       tmp = Galaxy::Temp.mk_auto_file "galaxy-download"
-      puts "Fetching #{core_url} into #{tmp}"
+
       @log.info("Fetching #{core_url} into #{tmp}")
       if core_url =~ /^https?:/
         begin
