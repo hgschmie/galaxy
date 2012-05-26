@@ -127,8 +127,8 @@ internal_matches_external = @internal_ip == @external_ip
 # - add a global resource allocator to avoid double assignment of a port in different resource controllers.
 
 @rc_agent_port = ResourceController.new 5400, max_agent_count
-@rc_http_port = ResourceController.new 18080, max_agent_count
-@rc_https_port = ResourceController.new 18443, max_agent_count
+@rc_http_port = ResourceController.new 18080, max_agent_count*2
+@rc_https_port = ResourceController.new 18443, max_agent_count*2
 @rc_jmx_port = ResourceController.new 22345, max_agent_count
 @rc_tomcat_port = ResourceController.new 18200, max_agent_count
 @rc_private_ports = ResourceController.new 21000, max_agent_count*private_ports_per_slot

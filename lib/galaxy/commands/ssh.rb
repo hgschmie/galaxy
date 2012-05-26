@@ -1,16 +1,16 @@
 module Galaxy
-    module Commands
-        class SSHCommand < Command
-            register_command "ssh"
+  module Commands
+    class SSHCommand < Command
+      register_command "ssh"
 
-            def execute agents
-                agent = agents.first
-                command = ENV['GALAXY_SSH_COMMAND'] || "ssh"
-                Kernel.system "#{command} #{agent.machine}" if agent
-            end
+      def execute agents
+        agent = agents.first
+        command = ENV['GALAXY_SSH_COMMAND'] || "ssh"
+        Kernel.system "#{command} #{agent.machine}" if agent
+      end
 
-            def self.help
-                return <<-HELP
+      def self.help
+        return <<-HELP
 #{name}
         
         Connect via ssh to the first host matching the selection criteria
@@ -21,7 +21,8 @@ module Galaxy
         
             export GALAXY_SSH_COMMAND="ssh -l foo"
                 HELP
-            end
-        end
+      end
     end
+    
+  end
 end

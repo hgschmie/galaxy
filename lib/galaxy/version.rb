@@ -1,3 +1,4 @@
 module Galaxy
-    Version = "3.4.4-dev"
+  # Don't forget to also update the version in build/sun/pkginfo
+  Version = "3.5.2"
 end

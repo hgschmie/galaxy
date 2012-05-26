@@ -1,10 +1,10 @@
-%define gemversion %(ruby -rlib/galaxy/version -e 'puts Galaxy::Version.split("-", 1)[0]' 2>/dev/null)
+%define gemversion %(ruby -rgalaxy/version -e 'puts Galaxy::Version.split("-", 1)[0]' 2>/dev/null)
 %define gemname galaxy
 
 Name: %{gemname}
 Summary: Software deployment tool
 Version: %{gemversion}
-Release: %(ruby -rlib/galaxy/version -e 'puts Galaxy::Version.split("-", 2)[1] || "final"' 2>/dev/null)
+Release: %(ruby -rgalaxy/version -e 'puts Galaxy::Version.split("-", 2)[1] || "final"' 2>/dev/null)
 License: Apache License, version 2.0
 Group: Development/Tools/Other
 URL: http://github.com/ning/galaxy
@@ -13,7 +13,7 @@ Requires: ruby
 BuildRoot: /tmp/galaxy-package
 Provides: rubygem(%{gemname}) = %{gemversion}
 
-%define gem %(ruby -rlib/galaxy/version -e 'puts "galaxy-#{Galaxy::Version}.gem"')
+%define gem %(ruby -rgalaxy/version -e 'puts "galaxy-#{Galaxy::Version}.gem"')
 
 # Use rpmbuild --define "_gonsole_url gonsole.prod.company.com" to customize
 # galaxy.{client,agent}.console in galaxy.conf
@@ -36,9 +36,9 @@ Galaxy is a lightweight software deployment and management tool used to manage t
 
 %install
 mkdir -p %{buildroot}/var/cache/gem
-cp pkg/%{gem} %{buildroot}/var/cache/gem
+cp %{gem} %{buildroot}/var/cache/gem
 mkdir -p %{buildroot}/etc/rc.d/init.d
-cp -r build/start-scripts/* %{buildroot}/etc/rc.d/init.d
+cp -r distro/redhat/etc/rc.d/init.d/* %{buildroot}/etc/rc.d/init.d
 find %{buildroot}/etc/rc.d/init.d -type f | xargs chmod a+x
 
 %clean

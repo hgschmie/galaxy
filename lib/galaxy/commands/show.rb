@@ -1,18 +1,18 @@
 module Galaxy
-    module Commands
-        class ShowCommand < Command
-            register_command "show"
+  module Commands
+    class ShowCommand < Command
+      register_command "show"
 
-            def execute agents
-                report.start
-                agents.sort_by { |agent| agent.agent_id }.each do |agent|
-                    report.record_result agent
-                end
-                report.finish
-            end
+      def execute agents
+        report.start
+        agents.sort_by { |agent| agent.agent_id }.each do |agent|
+          report.record_result agent
+        end
+        report.finish
+      end
 
-            def self.help
-                return <<-HELP
+      def self.help
+        return <<-HELP
 #{name}
         
         Show software deployments on the selected hosts
@@ -34,7 +34,8 @@ module Galaxy
         - Show all widgets:
             galaxy -t widget show
                 HELP
-            end
-        end
+      end
     end
+    
+  end
 end
