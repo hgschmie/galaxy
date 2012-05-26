@@ -8,31 +8,28 @@ class CountingSemaphore
   end
 
   def wait
-    Thread.exclusive {
+    s = Thread.exclusive {
       @counter -= 1
       if @counter < 0
         @waiting_list.push(Thread.current)
-        Thread.stop
+        true
+      else
+        false
       end
     }
+    Thread.stop if s
     self
   end
 
   def signal
-    Thread.exclusive {
-      begin
-        @counter += 1
-        if @counter <= 0
-          t = @waiting_list.shift
-          t.wakeup if t
-        end
-      rescue ThreadError
-        retry
+    t = Thread.exclusive {
+      @counter += 1
+      if @counter <= 0
+        @waiting_list.shift
       end
     }
+    t.wakeup if t
     self
-  ensure
-    Thread.critical = false
   end
 
   def exclusive
@@ -50,7 +47,7 @@ class ThreadGroup
     list.each { |t| t.join }
   end
 
-  def << thread
+  def <<(thread)
     add thread
   end
 
@@ -66,7 +63,7 @@ class Array
     sem = CountingSemaphore.new(thread_count ? thread_count : 100)
     results = []
     threads = ThreadGroup.new
-    lock = Mutex.new
+
     each_with_index do |item, i|
       sem.wait
       threads << Thread.new do
@@ -79,7 +76,6 @@ class Array
     end
 
     threads.join
-
     results
   end
 end
