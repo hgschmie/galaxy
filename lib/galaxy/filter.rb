@@ -5,13 +5,13 @@ module Galaxy
 
       case args[:set]
       when :all, "all"
-        filters << Proc.new { true }
+        filters << lambda { true }
       when :none, "none"
-        filters << Proc.new { false }
+        filters << lambda { false }
       when :empty, "empty"
-        filters << Proc.new { |a| a.config_path.nil? }
+        filters << lambda { |a| a.config_path.nil? }
       when :taken, "taken"
-        filters << Proc.new { |a| a.config_path }
+        filters << lambda { |a| a.config_path }
       end
 
       if args[:env] || args[:version] || args[:type]
@@ -19,7 +19,7 @@ module Galaxy
         version = args[:version] || "[^/]+"
         type = args[:type] || ".+"
 
-        filters << Proc.new { |a| a.config_path =~ %r!^/#{env}/#{version}/#{type}$! }
+        filters << lambda { |a| a.config_path =~ %r!^/#{env}/#{version}/#{type}$! }
       end
       
       if args[:agent_id]
