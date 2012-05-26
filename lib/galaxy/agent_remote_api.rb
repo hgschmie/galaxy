@@ -52,6 +52,7 @@ module Galaxy
         announce
         return status
       rescue Exception => e
+        # Roll slot_info back
         slot_info.update config.config_path, deployer.core_base_for(current_deployment), config_uri, binaries_uri
         
         error_reason = "Unable to become #{requested_config_path}: #{e}"
@@ -93,6 +94,7 @@ module Galaxy
           slot_info.update requested_config.config_path, deployer.core_base_for(current_deployment), config_uri, binaries_uri
           controller.perform! 'update-config', requested_config.config_path
         rescue Exception => e
+        # Roll slot_info back
           slot_info.update config.config_path, deployer.core_base_for(current_deployment), config_uri, binaries_uri
 
           error_reason = "Failed to update configuration for #{requested_config.config_path}: #{e}"
