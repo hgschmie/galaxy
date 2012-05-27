@@ -5,9 +5,9 @@ module Galaxy
 
       case args[:set]
       when :all, "all"
-        filters << lambda { true }
+        filters << lambda { |a| true }
       when :none, "none"
-        filters << lambda { false }
+        filters << lambda { |a| false }
       when :empty, "empty"
         filters << lambda { |a| a.config_path.nil? }
       when :taken, "taken"
@@ -46,6 +46,5 @@ module Galaxy
         filters.inject(true) { |result, filter| result && filter.call(a) }
       end
     end
-    
   end
 end
