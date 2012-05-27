@@ -6,23 +6,23 @@ module Galaxy
       register_command "update"
       changes_agent_state
 
-      def initialize args, options
+      def initialize(args, options)
         super
         @requested_version = args.first
         raise CommandLineError.new("Must specify version") unless @requested_version
         @versioning_policy = options[:versioning_policy]
         @build_version = options[:build_version]
-        @config_uri = @options[:config_uri]
-        @binaries_uri = @options[:binaries_uri]
+        @config_uri = options[:config_uri]
+        @binaries_uri = options[:binaries_uri]
       end
 
-      def normalize_filter filter
+      def normalize_filter(filter)
         filter = super
         filter[:set] = :taken if filter[:set] == :all
         filter
       end
 
-      def execute_for_agent agent
+      def execute_for_agent(agent)
         if agent.config_path.nil? or agent.config_path.empty?
           raise "Cannot update unassigned agent"
         end

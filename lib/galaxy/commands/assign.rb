@@ -6,7 +6,7 @@ module Galaxy
       register_command "assign"
       changes_agent_state
 
-      def initialize args, options
+      def initialize(args, options)
         super
 
         env, version, type = * args
@@ -18,15 +18,15 @@ module Galaxy
         @config_path = "/#{env}/#{version}/#{type}"
         @versioning_policy = options[:versioning_policy]
         @build_version = options[:build_version]
-        @config_uri = @options[:config_uri]
-        @binaries_uri = @options[:binaries_uri]
+        @config_uri = options[:config_uri]
+        @binaries_uri = options[:binaries_uri]
       end
 
       def default_filter
         {:set => :empty}
       end
 
-      def execute_for_agent agent
+      def execute_for_agent(agent)
         agent.proxy.become!(@build_version, @config_path, @config_uri, @binaries_uri, @versioning_policy)
       end
 
