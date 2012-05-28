@@ -180,6 +180,5 @@ module Galaxy
         end
       end
     end
-    
   end
 end
