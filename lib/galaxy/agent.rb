@@ -109,7 +109,7 @@ module Galaxy
     # deployment. This is stored alongside the 
     # actual slot data for later use.
     #
-    def load_slot_environment slot_environment
+    def load_slot_environment(slot_environment)
       unless slot_environment.nil? 
         begin
           File.open slot_environment, "r" do |f|
@@ -171,7 +171,7 @@ module Galaxy
       end
     end
 
-    def read_config deployment_number
+    def read_config(deployment_number)
       config = nil
       deployment_number = deployment_number.to_s
       data = @db[deployment_number]
@@ -194,7 +194,7 @@ module Galaxy
       config
     end
 
-    def write_config deployment_number, config
+    def write_config(deployment_number, config)
       deployment_number = deployment_number.to_s
       @db[deployment_number] = YAML.dump config
     end
@@ -204,7 +204,7 @@ module Galaxy
       @db['deployment'].to_i
     end
 
-    def current_deployment_number= deployment_number
+    def current_deployment_number= (deployment_number)
       deployment_number = deployment_number.to_s
       @db['deployment'] = deployment_number
       @config = read_config deployment_number

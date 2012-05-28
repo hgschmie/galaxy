@@ -14,7 +14,7 @@ module Galaxy
 
     DEFAULT_PING_INTERVAL = 60
 
-    def read_config_file config_file
+    def read_config_file(config_file)
       config_file = config_file || ENV['GALAXY_CONFIG']
       unless config_file.nil? or config_file.empty?
         msg = "Cannot find configuration file: #{config_file}"
@@ -33,23 +33,23 @@ module Galaxy
       return {}
     end
 
-    def set_machine machine_from_file
+    def set_machine(machine_from_file)
       @machine ||= @config.machine || machine_from_file
     end
 
-    def set_pid_file pid_file_from_file
+    def set_pid_file(pid_file_from_file)
       @pid_file ||= @config.pid_file || pid_file_from_file
     end
 
-    def set_user user_from_file
+    def set_user(user_from_file)
       @user ||= @config.user || user_from_file || nil
     end
 
-    def set_verbose verbose_from_file
+    def set_verbose(verbose_from_file)
       @verbose ||= @config.verbose || verbose_from_file
     end
 
-    def set_log log_from_file
+    def set_log(log_from_file)
       @log ||= @config.log || log_from_file || DEFAULT_LOG
       begin
         # Check if we can log to it
@@ -65,7 +65,7 @@ module Galaxy
       return @log
     end
 
-    def set_log_level log_level_from_file
+    def set_log_level(log_level_from_file)
       @log_level ||= begin
         log_level = @config.log_level || log_level_from_file || DEFAULT_LOG_LEVEL
         case log_level
@@ -81,13 +81,13 @@ module Galaxy
       end
     end
 
-    def guess key
+    def guess(key)
       val = self.send key
       puts "    --#{correct key} #{val}" if @config.verbose
       val
     end
 
-    def syslog_log e
+    def syslog_log(e)
       Syslog.open($0, Syslog::LOG_PID | Syslog::LOG_CONS) { |s| s.warning e }
     end
 
@@ -98,13 +98,13 @@ module Galaxy
   class AgentConfigurator
     include Config
 
-    def initialize config
+    def initialize(config)
       @config = config
       @config_from_file = read_config_file(config.config_file)
     end
 
     # This is a gross hack, that should die rather sooner than later -- hps
-    def correct key
+    def correct(key)
       case key
         # Agent
       when :agent_url
@@ -255,12 +255,12 @@ module Galaxy
   class ConsoleConfigurator
     include Config
 
-    def initialize config
+    def initialize(config)
       @config = config
       @config_from_file = read_config_file(config.config_file)
     end
 
-    def correct key
+    def correct(key)
       case key
         # Console
       when :announcement_url
