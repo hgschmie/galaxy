@@ -27,7 +27,7 @@ class TestSlotInfo < Test::Unit::TestCase
                                        :test2 => "value2",
                                        :test3 => 4815)
 
-    @slot_info = Galaxy::SlotInfo.new @db, "/repository", "/binaries", log, "machine", "slot", "group", @slot_environment
+    @slot_info = Galaxy::SlotInfo.new @db, "/repository", "/binaries", log, "machine", "slot", "group", @slot_environment, "/tmp/galaxy", "/tmp/persist"
     current_number = 1
     config = "/env/version/type"
     @deployer = Galaxy::Deployer.new "/repository", "/binaries", @path, log, @slot_info

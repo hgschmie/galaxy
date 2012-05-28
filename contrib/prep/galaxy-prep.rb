@@ -6,6 +6,7 @@
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'tmpdir'
 
 # Maximum number of agents that can be created
 max_agent_count = 20
@@ -104,6 +105,8 @@ end
 # derived configuration
 #
 
+@tmp_dir = Dir.mktmpdir("galaxy-prep")
+@persistent_dir = File.join(@base, "persistent")
 @config_dir = File.join(@base, "config")
 @deploy_dir = File.join(@base, "deploy")
 @host_prefix = @hostname.split('.')[0]
@@ -140,6 +143,7 @@ internal_matches_external = @internal_ip == @external_ip
 create_dir @base
 create_dir @config_dir
 create_dir @deploy_dir
+create_dir @persistent_dir
 
 puts "Created #{@base} as galaxy base directory."
 

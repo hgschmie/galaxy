@@ -24,7 +24,7 @@ class TestDeployer < Test::Unit::TestCase
     @db = Galaxy::DB.new @path
     log = Logger.new("/dev/null")
     @config = "/env/version/type"
-    @slot_info = Galaxy::SlotInfo.new @db, "/repository", "/binaries", log, "machine", "slot", "group"
+    @slot_info = Galaxy::SlotInfo.new @db, "/repository", "/binaries", log, "machine", "slot", "group", {}, "/tmp/galaxy", "/tmp/persist"
 
     @deployer = Galaxy::Deployer.new "/repository", "/binaries", @path, log, @slot_info
 

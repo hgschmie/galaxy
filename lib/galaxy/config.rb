@@ -127,6 +127,10 @@ module Galaxy
         "http-password"
       when :slot_environment
         "slot-environment"
+      when :tmp_dir
+        "tmp-dir"
+      when :persistent_dir
+        "persistent-dir"
 
         # Shared opts
       when :log_level
@@ -158,7 +162,9 @@ module Galaxy
         :announce_interval => guess(:announce_interval),
         :http_user => guess(:http_user),
         :http_password => guess(:http_password),
-        :slot_environment => guess(:slot_environment)
+        :slot_environment => guess(:slot_environment),
+        :tmp_dir => guess(:tmp_dir),
+        :persistent_dir => guess(:persistent_dir)
       }
     end
 
@@ -178,6 +184,14 @@ module Galaxy
 
     def slot_environment
       @slot_environment ||= @config.slot_environment || @config_from_file['galaxy.agent.slot_environment']
+    end
+    
+    def tmp_dir
+      @tmp_dir ||= @config.tmp_dir || @config_from_file['galaxy.agent.tmp_dir']
+    end
+
+    def persistent_dir
+      @persistent_dir ||= @config.persistent_dir || @config_from_file['galaxy.agent.persistent_dir']
     end
 
     def verbose

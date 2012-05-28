@@ -10,11 +10,10 @@ require 'galaxy/repository'
 #
 module Galaxy
   class ScriptSupport
-    attr_accessor :base, :config_path, :repository, :binaries, :machine, :agent_id, :agent_group
+    attr_accessor :base, :config_path, :repository, :binaries, :machine, :agent_id, :agent_group, :tmp_dir, :persistent_dir
     attr_reader :rest, :slot_info, :env
 
-
-    def initialize args, & block
+    def initialize (args, & block)
 
       @rest = OptionParser.new do |opts|
         opts.on("--slot-info SLOT_INFO") { |arg| @slot_info = arg }
@@ -32,18 +31,23 @@ module Galaxy
       @machine = @slot_data.machine
       @agent_id = @slot_data.agent_id
       @agent_group = @slot_data.agent_group
+      @tmp_dir = @slot_data.tmp_dir
+      @persistent_dir = @slot_data.persistent_dir
+
       @env = @slot_data.env
       # Wrap @env in an OpenStruct unless it already is one to allow lookups by key name using "."
       @env = OpenStruct.new(@slot_data.env) unless @env.is_a? OpenStruct
 
-      raise "No base given"           if @slot_data.base.nil?
-      raise "No config path given"    if @slot_data.config_path.nil?
-      raise "No repository url given" if @slot_data.repository.nil?
-      raise "No binaries url given"   if @slot_data.binaries.nil?
-      raise "No machine given"        if @slot_data.machine.nil?
-      raise "No agent id given"       if @slot_data.agent_id.nil?
-      raise "No agent group given"    if @slot_data.agent_group.nil?
-      raise "No environment given"    if @slot_data.env.nil?
+      raise "No base given"              if @slot_data.base.nil?
+      raise "No config path given"       if @slot_data.config_path.nil?
+      raise "No repository url given"    if @slot_data.repository.nil?
+      raise "No binaries url given"      if @slot_data.binaries.nil?
+      raise "No machine given"           if @slot_data.machine.nil?
+      raise "No agent id given"          if @slot_data.agent_id.nil?
+      raise "No agent group given"       if @slot_data.agent_group.nil?
+      raise "No environment given"       if @slot_data.env.nil?
+      raise "No tmp folder given"        if @slot_data.tmp_dir.nil?
+      raise "No persistent folder given" if @slot_data.persistent_dir.nil?
     end
 
     def load_slot_info
@@ -98,6 +102,8 @@ module Galaxy
       information["env.machine"]         = machine
       information["env.slot_info"]       = slot_info
       information["env.config_location"] = config_location
+      information["env.tmp_dir"]         = tmp_dir
+      information["env.persistent_dir"]  = persistent_dir
 
       information["internal.ip"]         = env.internal_ip
       information["internal.port.http"]  = env.internal_http   || 80
