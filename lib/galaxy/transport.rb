@@ -116,7 +116,7 @@ module Galaxy
       end
       return @servers[url] if @servers[url]
       begin
-         @servers[url] = Galaxy::HTTPServer.new(url, obj)
+         @servers[url] = Galaxy::HTTPServer.new(url, obj, log)
       rescue NameError
          raise NameError.new("Unable to create the http server.")
       end
