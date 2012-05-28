@@ -50,7 +50,7 @@ module Galaxy
       app = Rack::URLMap.new(
         '/' => ReceiveAnnouncement.new(console),
         '/status' => AnnouncementStatus.new)
-      
+
       # Create server
       begin
         @log.info("URL: #{url}")

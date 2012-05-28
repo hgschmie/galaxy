@@ -17,7 +17,7 @@ module Galaxy
       Galaxy::Transport.locate url
     end
 
-    def initialize drb_url, http_url, log, log_level, ping_interval, host, env
+    def initialize(drb_url, http_url, log, log_level, ping_interval, host, env)
       @host = host
       @env = env
 
@@ -46,7 +46,7 @@ module Galaxy
     end
 
     # Remote API
-    def reap agent_id, agent_group
+    def reap(agent_id, agent_group)
       key = "#{agent_id}/#{agent_group}"
       @mutex.synchronize do
         @db.delete key
@@ -55,7 +55,7 @@ module Galaxy
 
     # Return agents matching a filter query
     # Used by both HTTP and DRb API.
-    def agents filters = {}
+    def agents(filters = {})
       # Log command run by the client
       if filters[:command]
           @logger.info filters[:command]
@@ -76,7 +76,7 @@ module Galaxy
     #
     # this function is called as a callback from http post server. We could just use the announce function as the
     # callback, but using this function allows us to add in different stats for post announcements.
-    def process_post announcement
+    def process_post(announcement)
       announce announcement
     end
 
@@ -85,7 +85,7 @@ module Galaxy
     # Return agents matching a filter query (HTTP API).
     #
     # Note that & in the query means actually OR.
-    def process_get query_string
+    def process_get(query_string)
       # Convert env=prod&host=prod-1.company.com to {:env => "prod", :host =>
       # "prod-1.company.com"}
       filters = {}
@@ -135,7 +135,7 @@ module Galaxy
     private
 
     # Update the agents database
-    def announce announcement
+    def announce(announcement)
       begin
         agent_id = announcement.agent_id
         agent_group = announcement.agent_group
@@ -167,7 +167,7 @@ module Galaxy
     end
 
     # Iterate through the database to find agents that haven't pinged home
-    def ping cutoff
+    def ping(cutoff)
       @mutex.synchronize do
         @db.each_pair do |key, entry|
           if entry.agent_status != "offline" and entry.timestamp < cutoff
