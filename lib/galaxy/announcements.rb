@@ -24,8 +24,8 @@ module Galaxy
   end
 
   class ThinServer < Thin::Server
-    def initialize(*args, log, &block)
-      super(*args, block)
+    def initialize(log, *args, &block)
+      super *args, &block
       @log = log
     end
 
@@ -54,11 +54,11 @@ module Galaxy
       # Create server
       begin
         @log.info("URL: #{url}")
-        @server = ThinServer.new(get_host(url),
-                                  get_port(url),
-                                  app,
-                                  { :signals => false },
-                                  @log)
+        @server = ThinServer.new(@log,
+                                 get_host(url),
+                                 get_port(url),
+                                 app,
+                                 { :signals => false })
 
       rescue Exception => err
         msg = "HTTP server initialization error: #{err}"
