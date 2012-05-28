@@ -270,10 +270,11 @@ module Galaxy
         end
       end
 
-      repository = args[:repository] || "/tmp/galaxy-agent-properties"
-      deploy_dir = args[:deploy_dir] || "/tmp/galaxy-agent-deploy"
-      data_dir = args[:data_dir] || "/tmp/galaxy-agent-data"
-      binaries = args[:binaries] || "http://localhost:8000"
+      raise "Repository must be configured" if args[:repository].nil?
+      raise "Deploy directory must be configured" if args[:deploy_dir].nil?
+      raise "Data directory must be configured" if args[:data_dir].nil?
+      raise "Binaries location must be configured" if args[:binaries].nil?
+
       log = args[:log] || "STDOUT"
       log_level = args[:log_level] || Logger::INFO
       announce_interval = args[:announce_interval] || 60
@@ -283,10 +284,10 @@ module Galaxy
                         agent_url,
                         machine,
                         console_url,
-                        repository,
-                        deploy_dir,
-                        data_dir,
-                        binaries,
+                        args[:repository],
+                        args[:deploy_dir],
+                        args[:data_dir],
+                        args[:binaries],
                         args[:http_user],
                         args[:http_password],
                         args[:slot_environment],
