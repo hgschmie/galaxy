@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 #
 # Writes a set of configuration files and scripts to create a local galaxy installation.
 #
@@ -154,7 +154,7 @@ global_ports = []
 
 # prep each agent slot
 
-@slots.each do |@slot|
+@slots.each do |slot|
     http_port = @rc_http_port.get
     https_port = @rc_https_port.get
 
@@ -172,17 +172,17 @@ global_ports = []
     (0...global_ports.length).each { |x| slot_info["global_port_#{x}"] = global_ports[x] }
     (0...private_ports_per_slot).each { |x| slot_info["private_port_#{x}"] = @rc_private_ports.get }
 
-    File.open(File.join(@config_dir, "slotinfo-#{@slot}"), "w") { |file|
+    File.open(File.join(@config_dir, "slotinfo-#{slot}"), "w") { |file|
         file.write(YAML.dump(slot_info))
     }
 
-    FileUtils.mkdir_p File.join(@deploy_dir, @slot)
-    FileUtils.mkdir_p File.join(@config_dir, "data-#{@slot}")
+    FileUtils.mkdir_p File.join(@deploy_dir, slot)
+    FileUtils.mkdir_p File.join(@config_dir, "data-#{slot}")
 
-    File.open(File.join(@config_dir, "agent-#{@slot}.conf"), "w") { |file|
+    File.open(File.join(@config_dir, "agent-#{slot}.conf"), "w") { |file|
         file.write @agent_template.result
     }
-    puts "Agent #{@slot} complete"
+    puts "Agent #{slot} complete"
 end
 
 # write main configuration
