@@ -16,10 +16,17 @@ galaxy.agent.announce-interval:  5
 galaxy.agent.user:               <%= @user %>
 galaxy.agent.tmp_dir:            <%= @tmp_dir %>/galaxy/<%= @slot %>
 galaxy.agent.persistent_dir:     <%= @persistent_dir %>/<%= @slot %>
+
 #
-# Modify the following settings!
+# sample settings for HTTP
 # 
-galaxy.agent.http_user:          config-user
-galaxy.agent.http_password:      config-password
-galaxy.agent.config-root:        http://some.server/config
-galaxy.agent.binaries-root:      http://some.server/binaries
+# galaxy.agent.http_user:          config-user
+# galaxy.agent.http_password:      config-password
+# galaxy.agent.config-root:        http://some.server/config
+# galaxy.agent.binaries-root:      http://some.server/binaries
+
+#
+# sample settings for local development with deployment from maven.
+#
+galaxy.agent.config-root:        <%= @home %>/devel/config
+galaxy.agent.binaries-root:      <%= @home %>/.m2/repository

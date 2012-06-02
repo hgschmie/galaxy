@@ -67,6 +67,7 @@ File.open("script.erb") { |file|
   @script_template = ERB.new file.read
 }
 
+@home = ENV['HOME']
 @user = @config['user'] || ENV['USER']
 
 if @user.nil?
@@ -83,7 +84,7 @@ if @slots.length > max_agent_count
   raise("More than #{max_agent_count} slots defined, check the resource allocation first!")
 end
 
-@base = @config['base']
+@base = @config['base'] || File.join(@home, "galaxy")
 
 if @base.nil?
   raise("No base directory given!")
