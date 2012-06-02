@@ -14,3 +14,4 @@ target/
 .rvmrc
 .idea
 Gemfile.lock
+contrib/prep/ness*
