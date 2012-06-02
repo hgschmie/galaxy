@@ -155,6 +155,7 @@ global_ports = []
 # prep each agent slot
 
 @slots.each do |slot|
+    @slot = slot
     http_port = @rc_http_port.get
     https_port = @rc_https_port.get
 
