@@ -1,5 +1,23 @@
 #! /usr/bin/env ruby
 
+#
+# Takes a local galaxy installation, load the necessary pieces to figure out the slot configuration
+# and modify an eclipse launcher file to run a local service as if it were started inside the slot.
+#
+#
+# Parameters:
+#
+# <galaxy install folder> - the folder that galaxy was installed locally.
+# <slot number>           - the slot number (*not* the agent id). A slot usually is s0, s1, s2 etc.
+# <eclipse launch file>   - an eclipse launch file for a project. This launch file will be modified
+#                           and the result returned on stdout.
+#
+# Caveat:
+#
+# launchbuilder assumes the configuration layout as written by galaxy-prep. It will not work if
+# the local galaxy installation is radically different from what prep generates.
+#
+
 require 'rubygems'
 require 'xmlsimple'
 require 'galaxy/scripts'
@@ -53,6 +71,10 @@ if @workdir.nil?
   @launchfile['stringAttribute'] << @workdir
 end
 
+#
+# The next piece was taken from the launcher.standalone in the components-ness-galaxy.
+#
+
 config_opts = [
                "-Dness.config.location=file:#{@scripts.config_location}",
                "-Dness.config=#{@scripts.config_path}"
@@ -75,4 +97,8 @@ galaxy=@scripts.get_java_galaxy_env.join("&#10;")
 
 result=XmlSimple.xml_out(@launchfile, {'RootName' => 'launchConfiguration'})
 
-puts result.gsub!(/&amp;/, '&')
+#
+# xmlsimple writes &amp;#10;, replace the &amp; with the ampersand again.
+# Is there a way to write &#<num>; syntax with xmlsimple?
+#
+puts result.gsub(/&amp;/, '&')
