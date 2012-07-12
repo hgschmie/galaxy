@@ -15,3 +15,5 @@ target/
 .idea
 Gemfile.lock
 contrib/prep/ness*
+.project
+.settings
