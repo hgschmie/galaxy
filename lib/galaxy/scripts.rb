@@ -64,7 +64,7 @@ module Galaxy
               end
               return data
             end
-            puts "Expected a serialized OpenStruct, found something else!"
+            STDERR.puts "Expected a serialized OpenStruct, found something else!"
           end
         rescue Errno::ENOENT
         end
@@ -74,10 +74,16 @@ module Galaxy
 
     # This splits /env/version/type into "" "env" "version" "type". So the values are 1-3, not 0-2.
     def config
-      config = config_path.split("/")
-      unless config.length == 4
+      cfg = config_path.split("/")
+      if cfg.length < 4
         raise "Invalid configuration path: #{config_path}"
       end
+      
+      config = []
+      config[1] = cfg[1]
+      config[2] = cfg[2]
+      config[3] = cfg[3..-1].join('/')
+
       config
     end
     
