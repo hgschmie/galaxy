@@ -179,6 +179,35 @@ module Galaxy
       jvm_opts
     end
 
+    def find_installed_jdks
+        uname=`uname`.chomp
+      if uname.nil?
+        STDERR.puts "Could not determine platform type, falling back to default!"
+        return nil
+      end
+      
+      installed_jdks={}
+      if uname == 'Darwin'
+        for i in (6..8)
+          version = "1." + i.to_s
+          jdk_home=`/usr/libexec/java_home -v #{version} 2> /dev/null`.chomp
+          if $?.exitstatus == 0
+            installed_jdks[version + ".0"] = jdk_home
+          end
+        end
+      elsif uname == 'Linux'
+        for i in (6..8)
+          version = "1." + i.to_s
+          path = "/usr/lib/jvm/java-#{version}.0"
+          if File.exists?(path)
+            installed_jdks[version] = path
+          end
+        end
+      end
+         
+      installed_jdks
+    end
+
   end
 end
 
