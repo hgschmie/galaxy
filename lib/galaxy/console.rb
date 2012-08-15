@@ -8,6 +8,7 @@ require 'galaxy/filter'
 require 'galaxy/log'
 require 'galaxy/transport'
 require 'galaxy/announcements'
+require 'galaxy/console_observer'
 
 module Galaxy
   class Console
@@ -31,6 +32,8 @@ module Galaxy
       @db = {}
       @mutex = Mutex.new
 
+      @observer = ConsoleObserver.new
+
       Thread.new do
         loop do
           begin
@@ -50,6 +53,7 @@ module Galaxy
       key = "#{agent_id}/#{agent_group}"
       @mutex.synchronize do
         @db.delete key
+        @observer.changed(key, {})
       end
     end
 
@@ -159,6 +163,8 @@ module Galaxy
           @db[key] = announcement
           @db[key].timestamp = Time.now
           @db[key].agent_status = 'online'
+
+          @observer.changed(key, @db[key])
         end
       rescue RuntimeError => e
         error_message = "Error receiving announcement: #{e}"
@@ -176,6 +182,8 @@ module Galaxy
 
             entry.agent_status = "offline"
             entry.status = "unknown"
+
+            @observer.changed(key, @db[key])
           end
         end
       end
