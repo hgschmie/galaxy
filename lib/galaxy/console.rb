@@ -33,6 +33,7 @@ module Galaxy
       @mutex = Mutex.new
 
       @observer = ConsoleObserver.new
+      @changed = false
 
       Thread.new do
         loop do
@@ -40,6 +41,8 @@ module Galaxy
             cutoff = Time.new
             sleep @ping_interval
             ping cutoff
+
+            refresh_observer
           rescue Exception => e
             @logger.warn "Uncaught exception in agent ping thread: #{e}"
             @logger.warn e.backtrace
@@ -53,7 +56,10 @@ module Galaxy
       key = "#{agent_id}/#{agent_group}"
       @mutex.synchronize do
         @db.delete key
-        @observer.changed(key, {})
+
+        o = OpenStruct.new
+        o.timestamp = Time.now.to_s
+        @observer.changed(key, o)
       end
     end
 
@@ -146,25 +152,29 @@ module Galaxy
         key = "#{agent_id}/#{agent_group}"
         @logger.debug "Received announcement from #{agent_id}/#{agent_group}."
         @mutex.synchronize do
+          changed = false
           if @db.has_key?(key)
             unless @db[key].agent_status != "offline"
               announce_message = "#{key} is now online again"
               @logger.info announce_message
+              changed = true
             end
             if @db[key].status != announcement.status
               announce_message = "#{key} core state changed: #{@db[key].status} --> #{announcement.status}"
               @logger.info announce_message
+              changed = true
             end
           else
             announce_message = "Discovered new agent: #{key} [#{announcement.inspect}]"
             @logger.info "Discovered new agent: #{key} [#{announcement.inspect}]"
+            changed = true
           end
 
           @db[key] = announcement
           @db[key].timestamp = Time.now
           @db[key].agent_status = 'online'
 
-          @observer.changed(key, @db[key])
+          @observer.changed(key, @db[key]) if changed
         end
       rescue RuntimeError => e
         error_message = "Error receiving announcement: #{e}"
@@ -188,5 +198,20 @@ module Galaxy
         end
       end
     end
+
+    # Dumps state to observer once every hour
+    def refresh_observer
+      if Time.now.min == 0 and @changed == false
+        @mutex.synchronize do
+          @db.keys.each do |key|
+            @observer.changed(key, @db[key])
+          end
+        end
+        @changed = true
+      elsif Time.now.min == 1
+        @changed = false
+      end
+    end
+
   end
 end
