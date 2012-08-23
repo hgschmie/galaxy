@@ -1,33 +1,29 @@
 require 'socket'
 require 'json'
+require 'ostruct'
 
 module Galaxy
   class ConsoleObserver
 
-    def initialize
-      load_config
+    def initialize(observer_host = 'localhost:8001')
+      @observer_host = observer_host
+      @host, @port = @observer_host.split(':')
+
       @socket = UDPSocket.new
     end
 
-    def load_config
-      @observer = File.open('/etc/galaxy.conf') do |file|
-        file.read.match /galaxy.console.observer:\s*([^\n]*)/
-        $1
+    def changed(key, value = nil)
+      if value.nil?
+        value = OpenStruct.new
+        value.timestamp = Time.now.to_s
       end
-      
-      return if @observer.nil?
-      @host, @port = @observer.split(':')
-    end
 
-    def changed(key, value)
-      unless @observer.nil?
-        @socket.send(
-          {key => to_hash(value) }.to_json,
-          0,
-          @host,
-          @port
-        )
-      end
+      @socket.send(
+        {key => to_hash(value) }.to_json,
+        0,
+        @host,
+        @port
+      )
     end
 
     def to_hash(obj)

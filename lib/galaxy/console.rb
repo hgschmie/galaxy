@@ -18,7 +18,7 @@ module Galaxy
       Galaxy::Transport.locate url
     end
 
-    def initialize(drb_url, http_url, log, log_level, ping_interval, host, env)
+    def initialize(drb_url, http_url, log, log_level, ping_interval, host, observer_host, env)
       @host = host
       @env = env
 
@@ -32,8 +32,8 @@ module Galaxy
       @db = {}
       @mutex = Mutex.new
 
-      @observer = ConsoleObserver.new
-      @changed = false
+      @observer = ConsoleObserver.new observer_host
+      @refreshed = false
 
       Thread.new do
         loop do
@@ -57,9 +57,7 @@ module Galaxy
       @mutex.synchronize do
         @db.delete key
 
-        o = OpenStruct.new
-        o.timestamp = Time.now.to_s
-        @observer.changed(key, o)
+        @observer.changed(key)
       end
     end
 
@@ -121,6 +119,7 @@ module Galaxy
                             log_level,
                             ping_interval,
                             host, 
+                            args[:observer_host],
                             args[:environment]
 
       # DRb transport (galaxy command line client)
@@ -201,15 +200,15 @@ module Galaxy
 
     # Dumps state to observer once every hour
     def refresh_observer
-      if Time.now.min == 0 and @changed == false
+      if Time.now.min == 0 and @refreshed == false
         @mutex.synchronize do
           @db.keys.each do |key|
             @observer.changed(key, @db[key])
           end
         end
-        @changed = true
+        @refreshed = true
       elsif Time.now.min == 1
-        @changed = false
+        @refreshed = false
       end
     end
 
