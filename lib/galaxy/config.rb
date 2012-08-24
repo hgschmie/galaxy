@@ -295,7 +295,8 @@ module Galaxy
         :host => guess(:host),
         :announcement_url => guess(:announcement_url),
         :ping_interval => guess(:ping_interval),
-        :console_proxied_url => guess(:console_proxied_url)
+        :console_proxied_url => guess(:console_proxied_url),
+        :observer_host => guess(:observer_host)
       }
     end
 
@@ -347,6 +348,10 @@ module Galaxy
           @config_from_file['galaxy.console.environment']
         end
       end
+    end
+
+    def observer_host
+      @observer_host ||= @config_from_file['galaxy.console.observer']
     end
     
   end

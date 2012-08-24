@@ -8,6 +8,7 @@ require 'galaxy/filter'
 require 'galaxy/log'
 require 'galaxy/transport'
 require 'galaxy/announcements'
+require 'galaxy/console_observer'
 
 module Galaxy
   class Console
@@ -17,7 +18,7 @@ module Galaxy
       Galaxy::Transport.locate url
     end
 
-    def initialize(drb_url, http_url, log, log_level, ping_interval, host, env)
+    def initialize(drb_url, http_url, log, log_level, ping_interval, host, observer_host, env)
       @host = host
       @env = env
 
@@ -31,12 +32,17 @@ module Galaxy
       @db = {}
       @mutex = Mutex.new
 
+      @observer = ConsoleObserver.new observer_host
+      @refreshed = false
+
       Thread.new do
         loop do
           begin
             cutoff = Time.new
             sleep @ping_interval
             ping cutoff
+
+            refresh_observer
           rescue Exception => e
             @logger.warn "Uncaught exception in agent ping thread: #{e}"
             @logger.warn e.backtrace
@@ -50,6 +56,8 @@ module Galaxy
       key = "#{agent_id}/#{agent_group}"
       @mutex.synchronize do
         @db.delete key
+
+        @observer.changed(key)
       end
     end
 
@@ -111,6 +119,7 @@ module Galaxy
                             log_level,
                             ping_interval,
                             host, 
+                            args[:observer_host],
                             args[:environment]
 
       # DRb transport (galaxy command line client)
@@ -142,23 +151,29 @@ module Galaxy
         key = "#{agent_id}/#{agent_group}"
         @logger.debug "Received announcement from #{agent_id}/#{agent_group}."
         @mutex.synchronize do
+          changed = false
           if @db.has_key?(key)
             unless @db[key].agent_status != "offline"
               announce_message = "#{key} is now online again"
               @logger.info announce_message
+              changed = true
             end
             if @db[key].status != announcement.status
               announce_message = "#{key} core state changed: #{@db[key].status} --> #{announcement.status}"
               @logger.info announce_message
+              changed = true
             end
           else
             announce_message = "Discovered new agent: #{key} [#{announcement.inspect}]"
             @logger.info "Discovered new agent: #{key} [#{announcement.inspect}]"
+            changed = true
           end
 
           @db[key] = announcement
           @db[key].timestamp = Time.now
           @db[key].agent_status = 'online'
+
+          @observer.changed(key, @db[key]) if changed
         end
       rescue RuntimeError => e
         error_message = "Error receiving announcement: #{e}"
@@ -176,9 +191,26 @@ module Galaxy
 
             entry.agent_status = "offline"
             entry.status = "unknown"
+
+            @observer.changed(key, @db[key])
           end
         end
       end
     end
+
+    # Dumps state to observer once every hour
+    def refresh_observer
+      if Time.now.min == 0 and @refreshed == false
+        @mutex.synchronize do
+          @db.keys.each do |key|
+            @observer.changed(key, @db[key])
+          end
+        end
+        @refreshed = true
+      elsif Time.now.min == 1
+        @refreshed = false
+      end
+    end
+
   end
 end
