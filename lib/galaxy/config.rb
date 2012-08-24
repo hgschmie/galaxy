@@ -351,7 +351,7 @@ module Galaxy
     end
 
     def observer_host
-      @observer_host ||= @config_from_file['galaxy.console.observer'] || 'localhost:8001'
+      @observer_host ||= @config_from_file['galaxy.console.observer']
     end
     
   end
