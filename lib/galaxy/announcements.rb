@@ -185,7 +185,7 @@ class HTTPAnnouncementSender
               response.body
           end
       rescue Exception => e
-          @log.warn "Client side error: #{e}" if @log
+          @log.warn "Client side error for #{@uri.host}:#{@uri.port} is: #{e}" if @log
       end
   end
 
