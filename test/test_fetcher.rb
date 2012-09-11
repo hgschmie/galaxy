@@ -72,4 +72,10 @@ class TestFetcher < Test::Unit::TestCase
        @server.logger.level = Logger::WARN
      end
    end
+   
+   def test_nexus_fetching
+     fetcher = Galaxy::Fetcher.new("nexus:http://localhost:7777", nil, nil, Logger.new("/dev/null"))
+     path = fetcher.fetch FetchObj.new "group", "artifact", "version"
+     assert File.exists?(path)
+   end
 end

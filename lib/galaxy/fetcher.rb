@@ -1,5 +1,7 @@
 require 'galaxy/temp'
 require 'galaxy/host'
+require 'json'
+require 'open-uri'
 
 module Galaxy
   class Fetcher
@@ -11,20 +13,25 @@ module Galaxy
     def fetch build, build_uri=nil, extension="tar.gz"
       core_url = build_uri || @base
 
-      if !build.group.nil?
-        group_path=build.group.gsub /\./, '/'
-        # Maven repo compatible
-        core_url = "#{core_url}/#{group_path}/#{build.artifact}/#{build.version}"
-      end
+      if core_url.start_with? "nexus:"
+        core_url.slice! "nexus:"
+        core_url = "#{core_url}/service/local/artifact/maven/redirect?r=public&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
+      else
+        if !build.group.nil?
+          group_path=build.group.gsub /\./, '/'
+          # Maven repo compatible
+          core_url = "#{core_url}/#{group_path}/#{build.artifact}/#{build.version}"
+        end
 
-      core_url="#{core_url}/#{build.artifact}-#{build.version}.#{extension}"
+        core_url="#{core_url}/#{build.artifact}-#{build.version}.#{extension}"
+      end
 
       tmp = Galaxy::Temp.mk_auto_file "galaxy-download"
 
       @log.info("Fetching #{core_url} into #{tmp}")
       if core_url =~ /^https?:/
         begin
-          curl_command = "curl -D - #{core_url} -o #{tmp} -s"
+          curl_command = "curl -L -D - \"#{core_url}\" -o #{tmp} -s"
           if !@http_user.nil? && !@http_password.nil?
             curl_command << " -u #{@http_user}:#{@http_password}"
           end
@@ -34,7 +41,9 @@ module Galaxy
         rescue Galaxy::HostUtils::CommandFailedError => e
           raise "Failed to download archive #{core_url}: #{e.message}"
         end
-        status = output.first
+        # cURL prints out each status code as it gets it, so in the case of a 301 redirect
+        # we need to make sure to get the last one, which should still be 200.
+        status = output.select {|l| l.start_with? "HTTP" }.last
         (protocol, response_code, response_message) = status.split
         unless response_code == '200'
           raise "Failed to download archive #{core_url}: #{status}"
