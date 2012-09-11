@@ -70,6 +70,7 @@ namespace :run do
     # hostname, which can be as ugly as "Pierre-Alexandre-Meyers-MacBook-Pro.local"
     system(RUBY, "-I", File.join(PWD, "lib"),
            File.join(PWD, "bin", "galaxy-console"), "--start",
+           "--announcement-url", "http://localhost:4442",
            "-i", "localhost",
            "--ping-interval", "10", "-f", "-l", "STDOUT", "-L", "DEBUG", "-v")
   end
@@ -83,6 +84,7 @@ namespace :run do
            "-r", "http://localhost/config/trunk/qa",
            "-b", "http://localhost/binaries",
            "-d", "/tmp/deploy", "-x", "/tmp/extract",
+           "--console", "http://localhost:4442",
            "--announce-interval", "10", "-f", "-l", "STDOUT", "-L", "DEBUG", "-v")
   end
 end
