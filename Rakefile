@@ -81,28 +81,4 @@ namespace :run do
   end
 end
 
-namespace :package do
-  desc "Build an RPM package"
-  task :rpm => :gemspec do
-    `gem build galaxy.gemspec`
-    `gem install galaxy-#{PACKAGE_VERSION}`
-    build_dir = "/tmp/galaxy-package"
-    rpm_dir = "/tmp/galaxy-rpm"
-    rpm_version = PACKAGE_VERSION
-    rpm_version += "-final" unless rpm_version.include?('-')
-
-    FileUtils.rm_rf(build_dir)
-    FileUtils.mkdir_p(build_dir)
-    FileUtils.rm_rf(rpm_dir)
-    FileUtils.mkdir_p(rpm_dir)
-
-    `rpmbuild --target=noarch -v --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb distro/redhat/rpm/galaxy.spec` || raise("Failed to create package")
-    # You can tweak the rpm as follow:
-    #`rpmbuild --target=noarch -v --define "_gonsole_url gonsole.company.com" --define "_gepo_url http://gepo.company.com/config/trunk/prod" --define "_builddir ." --define "_rpmdir #{rpm_dir}" -bb build/rpm/galaxy.spec` || raise("Failed to create package")
-
-    FileUtils.cp("#{rpm_dir}/noarch/#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm", "#{PACKAGE_NAME}-#{rpm_version}.noarch.rpm")
-    FileUtils.rm_rf(build_dir)
-    FileUtils.rm_rf(rpm_dir)
-  end
-
 end
