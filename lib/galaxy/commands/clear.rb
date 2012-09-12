@@ -17,11 +17,11 @@ module Galaxy
       def self.help
         return <<-HELP
 #{name}
-        
+
         Stop and clear the active software deployment on the selected hosts
                 HELP
       end
     end
-    
+
   end
 end

@@ -31,7 +31,12 @@ module Galaxy
     include Galaxy::AgentRemoteApi
 
     def initialize(agent_id, agent_group, url, machine, announcements_url, repository_base, deploy_dir,
-      data_dir, binaries_base, http_user, http_password, slot_environment, tmp_dir, persistent_dir, log, log_level, announce_interval)
+      data_dir, binaries_base, http_user, http_password, slot_environment, tmp_dir, persistent_dir, nexus_repo,
+      log, log_level, announce_interval)
+
+      @logger = Galaxy::Log::Glogger.new log
+      @logger.log.level = log_level
+
       @drb_url = url
       @agent_id = agent_id
       @agent_group = agent_group
@@ -42,9 +47,7 @@ module Galaxy
       @binaries_base = binaries_base
       @tmp_dir = tmp_dir
       @persistent_dir = persistent_dir
-
-      @logger = Galaxy::Log::Glogger.new log
-      @logger.log.level = log_level
+      @nexus_repo = nexus_repo
 
       @slot_environment = load_slot_environment slot_environment
 
@@ -79,7 +82,7 @@ module Galaxy
       @db = Galaxy::DB.new data_dir
       @slot_info = Galaxy::SlotInfo.new @db, repository_base, binaries_base, @logger, @machine, @agent_id, @agent_group, @slot_environment, @tmp_dir, @persistent_dir
       @deployer = Galaxy::Deployer.new repository_base, binaries_base, deploy_dir, @logger, @slot_info
-      @fetcher = Galaxy::Fetcher.new binaries_base, @http_user, @http_password, @logger
+      @fetcher = Galaxy::Fetcher.new binaries_base, @http_user, @http_password, @nexus_repo, @logger
       @starter = Galaxy::Starter.new @logger, @db
 
       if RUBY_PLATFORM =~ /\w+-(\D+)/
@@ -91,7 +94,9 @@ module Galaxy
 
       current_deployment = current_deployment_number
       @config = read_config current_deployment
-
+      @config.repository_base ||= repository_base
+      @config.binaries_base ||= binaries_base
+      
       # Make sure that the slot_info file is current.
       @slot_info.update @config.config_path, @deployer.core_base_for(current_deployment)
 
@@ -260,14 +265,7 @@ module Galaxy
       if args[:machine]
         machine = args[:machine]
       else
-        machine_file = args[:machine_file] || Galaxy::Config::DEFAULT_MACHINE_FILE
-        if File.exists? machine_file
-          File.open machine_file, "r" do |f|
-            machine = f.read.chomp
-          end
-        else
-          machine = Socket.gethostname
-        end
+        machine = Socket.gethostname
       end
 
       raise "Repository must be configured" if args[:repository].nil?
@@ -293,6 +291,7 @@ module Galaxy
                         args[:slot_environment],
                         args[:tmp_dir],
                         args[:persistent_dir],
+                        args[:nexus_repo],
                         log,
                         log_level,
                         announce_interval
