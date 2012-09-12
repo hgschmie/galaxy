@@ -80,5 +80,3 @@ namespace :run do
            "--announce-interval", "10", "-f", "-l", "STDOUT", "-L", "DEBUG", "-v")
   end
 end
-
-end
