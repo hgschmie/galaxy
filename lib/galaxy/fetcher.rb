@@ -13,16 +13,16 @@ module Galaxy
     def fetch build, build_uri=nil, extension="tar.gz"
       core_url = build_uri || @base
 
-      if core_url.start_with? "nexus:"
-        core_url.slice! "nexus:"
-        core_url = "#{core_url}/service/local/artifact/maven/redirect?r=public&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
-      else
-        if !build.group.nil?
+      if !build.group.nil?
+        if core_url.start_with? "nexus:"
+          core_url = core_url.slice(6..-1)
+          core_url = "#{core_url}/service/local/artifact/maven/redirect?r=public&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
+        else
           group_path=build.group.gsub /\./, '/'
           # Maven repo compatible
           core_url = "#{core_url}/#{group_path}/#{build.artifact}/#{build.version}"
         end
-
+      else
         core_url="#{core_url}/#{build.artifact}-#{build.version}.#{extension}"
       end
 
@@ -35,7 +35,7 @@ module Galaxy
           if !@http_user.nil? && !@http_password.nil?
             curl_command << " -u #{@http_user}:#{@http_password}"
           end
-  
+
           @log.debug("Running CURL command: #{curl_command}")
           output = Galaxy::HostUtils.system(curl_command)
         rescue Galaxy::HostUtils::CommandFailedError => e
@@ -55,6 +55,6 @@ module Galaxy
       end
       return tmp
     end
-    
+
   end
 end
