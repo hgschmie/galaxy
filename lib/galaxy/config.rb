@@ -326,7 +326,7 @@ module Galaxy
     end
 
     def announcement_url
-      @announcement_url ||= @config.announcement_url || @config_from_file['galaxy.console.announcement-url'] || "http://#{`hostname`.strip}"
+      @announcement_url ||= @config.announcement_url || @config_from_file['galaxy.console.announcement-url'] || "http://0.0.0.0"
     end
 
     def host
