@@ -19,8 +19,8 @@ class TestFetcher < Test::Unit::TestCase
   end
 
   def setup
-    @local_fetcher = Galaxy::Fetcher.new(File.join(File.dirname(__FILE__), "property_data"), nil, nil, Logger.new("/dev/null"))
-    @http_fetcher = Galaxy::Fetcher.new("http://localhost:7777", nil, nil, Logger.new("/dev/null"))
+    @local_fetcher = Galaxy::Fetcher.new(File.join(File.dirname(__FILE__), "property_data"), nil, nil, "public", Logger.new("/dev/null"))
+    @http_fetcher = Galaxy::Fetcher.new("http://localhost:7777", nil, nil, "public", Logger.new("/dev/null"))
 
     webrick_logger =  Logger.new(STDOUT)
     webrick_logger.level = Logger::WARN
@@ -74,7 +74,7 @@ class TestFetcher < Test::Unit::TestCase
    end
    
    def test_nexus_fetching
-     fetcher = Galaxy::Fetcher.new("nexus:http://localhost:7777", nil, nil, Logger.new("/dev/null"))
+     fetcher = Galaxy::Fetcher.new("nexus:http://localhost:7777", nil, nil, "public", Logger.new("/dev/null"))
      path = fetcher.fetch FetchObj.new "group", "artifact", "version"
      assert File.exists?(path)
    end
