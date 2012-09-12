@@ -30,7 +30,13 @@ module Galaxy
 
         stop!
 
-        archive_path = @fetcher.fetch build_version, binaries_uri
+        archive_path,version = @fetcher.fetch build_version, binaries_uri
+        
+        # If the fetcher returned a version, update the build version to match it.
+        if !version.nil?
+          build_version = Galaxy::BuildVersion.new build_version.group, build_version.artifact, version
+          @logger.debug("Changed build version to #{build_version}")
+        end
 
         new_deployment = current_deployment + 1
 

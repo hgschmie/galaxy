@@ -11,13 +11,37 @@ module Galaxy
 
     # return path on filesystem to the binary
     def fetch build, build_uri=nil, extension="tar.gz"
+      version = nil
+
       core_url = build_uri || @base
 
       if !build.group.nil?
         if core_url.start_with? "nexus:"
           @log.debug("Switching to Nexus mode...")
           core_url = core_url.slice(6..-1)
-          core_url = "#{core_url}/service/local/artifact/maven/redirect?r=#{@nexus_repo}&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
+
+          repository_path = nil
+          begin 
+            # Try resolving the artifact
+            resolve_url = "#{core_url}/service/local/artifact/maven/resolve?r=#{@nexus_repo}&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
+            @log.debug("Resolve URL is #{resolve_url}")
+
+            open(resolve_url, "Accept" => "application/json") do |io|
+              data = JSON.parse(io.read)
+              repository_path = data['data']['repositoryPath']
+              version = data['data']['version']
+              @log.debug("Found artifact at #{repository_path} with version #{version}.")
+            end
+          rescue OpenURI::HTTPError => http_error
+            status_code = http_error.io.status[0]
+            raise "Failed to resolve artifact #{build.group}/#{build.artifact}/#{build.version}, Nexus returned #{status_code}"
+          end
+          
+          raise "Nexus resolved artifact but did not return repository path!" unless repository_path
+          raise "Nexus resolved artifact but did not return version!" unless version
+
+          # Now compose the URI to fetch the artifact
+          core_url = "#{core_url}/content/groups/#{@nexus_repo}/#{repository_path}"
         else
           @log.debug("Switching to Maven mode...")
           group_path=build.group.gsub /\./, '/'
@@ -56,8 +80,7 @@ module Galaxy
           File.open(tmp, "w") { |f| f.write(io.read) }
         end
       end
-      return tmp
+      return tmp, version
     end
-
   end
 end
