@@ -262,14 +262,7 @@ module Galaxy
       if args[:machine]
         machine = args[:machine]
       else
-        machine_file = args[:machine_file] || Galaxy::Config::DEFAULT_MACHINE_FILE
-        if File.exists? machine_file
-          File.open machine_file, "r" do |f|
-            machine = f.read.chomp
-          end
-        else
-          machine = Socket.gethostname
-        end
+        machine = Socket.gethostname
       end
 
       raise "Repository must be configured" if args[:repository].nil?

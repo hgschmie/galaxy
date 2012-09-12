@@ -33,11 +33,8 @@ opts = OptionParser.new do |opts|
     opts.on("-U", "--agent-url ['http://'|'druby://']HOST[:PORT]", "Local Agent URL that the agent announces. Default: druby://localhost:4441") do |agent_url|
         command_line_options.agent_url = agent_url
     end
-    opts.on("-m", "--machine MACHINE", "Physical machine where the agent lives (overrides -M)") do |machine|
+    opts.on("-m", "--machine MACHINE", "Physical machine where the agent live") do |machine|
         command_line_options.machine = machine
-    end
-    opts.on("-M", "--machine-file FILE", "Filename containing the physical machine name") do |machine_file|
-        command_line_options.machine_file = machine_file
     end
     opts.on("-c", "--console ['http://'|'druby://']HOST[:PORT]", "Hostname where the console is listening") do |console|
         command_line_options.console = console

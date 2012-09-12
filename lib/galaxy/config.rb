@@ -8,7 +8,6 @@ module Galaxy
     DEFAULT_HOST = ENV["GALAXY_HOST"] || "localhost"
     DEFAULT_LOG = ENV["GALAXY_LOG"] || "SYSLOG"
     DEFAULT_LOG_LEVEL = ENV["GALAXY_LOG_LEVEL"] || "INFO"
-    DEFAULT_MACHINE_FILE = ENV["GALAXY_MACHINE_FILE"] || ""
     DEFAULT_AGENT_PID_FILE = ENV["GALAXY_AGENT_PID_FILE"] || "/tmp/galaxy-agent.pid"
     DEFAULT_CONSOLE_PID_FILE = ENV["GALAXY_CONSOLE_PID_FILE"] || "/tmp/galaxy-console.pid"
 
@@ -113,8 +112,6 @@ module Galaxy
         "identifier"
       when :agent_group
         "group"
-      when :machine_file
-        "machine-file"
       when :deploy_dir
         "deploy-to"
       when :data_dir
