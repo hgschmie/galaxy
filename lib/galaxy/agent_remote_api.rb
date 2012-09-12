@@ -250,7 +250,9 @@ module Galaxy
 
         @logger.debug "Clearing core"
         deployer.deactivate current_deployment_number
-        self.current_deployment_number = current_deployment_number + 1
+        new_deployment = current_deployment_number + 1
+        self.current_deployment_number = new_deployment
+        slot_info.update nil, deployer.core_base_for(new_deployment)
 
         announce
         return status
