@@ -91,7 +91,9 @@ module Galaxy
 
       current_deployment = current_deployment_number
       @config = read_config current_deployment
-
+      @config.repository_base ||= repository_base
+      @config.binaries_base ||= binaries_base
+      
       # Make sure that the slot_info file is current.
       @slot_info.update @config.config_path, @deployer.core_base_for(current_deployment)
 

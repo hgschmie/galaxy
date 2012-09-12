@@ -48,6 +48,8 @@ module Galaxy
                                                :core_group => build_version.group,
                                                :build => build_version.version,
                                                :core_base => core_base,
+                                               :repository_base => config_uri || @repository_base,
+                                               :binaries_base => binaries_uri || @binaries_base,
                                                :config_path => requested_config.config_path,
                                                :auto_start => true)
         write_config new_deployment, new_deployment_config
@@ -111,6 +113,8 @@ module Galaxy
                                  :core_group => config.core_group,
                                  :build => config.build,
                                  :core_base => config.core_base,
+                                 :repository_base => config_uri,
+                                 :binaries_base => binaries_uri,
                                  :config_path => requested_config.config_path)
 
         write_config(current_deployment, @config)
@@ -136,7 +140,10 @@ module Galaxy
         if current_deployment_number > 0
           write_config current_deployment_number, OpenStruct.new()
           @core_base = deployer.rollback current_deployment_number
-          self.current_deployment_number = current_deployment_number - 1
+          new_deployment = current_deployment_number - 1
+          self.current_deployment_number = new_deployment
+          @config = read_config new_deployment
+          slot_info.update @config.config_path, deployer.core_base_for(new_deployment), @config.repository_base, @config.binaries_base
         end
 
         announce
