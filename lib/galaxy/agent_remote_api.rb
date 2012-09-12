@@ -16,11 +16,12 @@ module Galaxy
             raise error_reason
           end
         end
+        
+        prop_builder = Galaxy::Properties::Builder.new config_uri.nil? ? @repository_base : config_uri, @http_user, @http_password, @logger
 
-        build_version = Galaxy::BuildVersion.new_from_options req_build_version
+        build_version = Galaxy::BuildVersion.new_from_options req_build_version, prop_builder, requested_config
 
         if build_version.nil?
-          prop_builder = Galaxy::Properties::Builder.new config_uri.nil? ? @repository_base : config_uri, @http_user, @http_password, @logger
           build_version = Galaxy::BuildProperties.new_from_config(@logger, prop_builder, requested_config)
           build_version.validate_os(@os)
         end
