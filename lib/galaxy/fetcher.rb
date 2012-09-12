@@ -15,14 +15,17 @@ module Galaxy
 
       if !build.group.nil?
         if core_url.start_with? "nexus:"
+          @log.debug("Switching to Nexus mode...")
           core_url = core_url.slice(6..-1)
           core_url = "#{core_url}/service/local/artifact/maven/redirect?r=public&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
         else
+          @log.debug("Switching to Maven mode...")
           group_path=build.group.gsub /\./, '/'
           # Maven repo compatible
-          core_url = "#{core_url}/#{group_path}/#{build.artifact}/#{build.version}"
+          core_url = "#{core_url}/#{group_path}/#{build.artifact}/#{build.version}/#{build.artifact}-#{build.version}.#{extension}"
         end
       else
+        @log.debug("Running in default mode...")
         core_url="#{core_url}/#{build.artifact}-#{build.version}.#{extension}"
       end
 
