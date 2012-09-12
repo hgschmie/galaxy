@@ -128,6 +128,9 @@ module Galaxy
         "tmp-dir"
       when :persistent_dir
         "persistent-dir"
+      when :nexus_repo
+        "nexus-repo"
+        
 
         # Shared opts
       when :log_level
@@ -161,7 +164,8 @@ module Galaxy
         :http_password => guess(:http_password),
         :slot_environment => guess(:slot_environment),
         :tmp_dir => guess(:tmp_dir),
-        :persistent_dir => guess(:persistent_dir)
+        :persistent_dir => guess(:persistent_dir),
+        :nexus_repo => guess(:nexus_repo)
       }
     end
 
@@ -189,6 +193,10 @@ module Galaxy
 
     def persistent_dir
       @persistent_dir ||= @config.persistent_dir || @config_from_file['galaxy.agent.persistent_dir']
+    end
+
+    def nexus_repo
+      @nexus_repo ||= @config.nexus_repo || @config_from_file['galaxy.agent.nexus_repo'] || 'public'
     end
 
     def verbose
@@ -314,8 +322,7 @@ module Galaxy
     end
 
     def pid_file
-      set_pid_file @config_from_file['galaxy.console.pid-file'] ||
-        DEFAULT_CONSOLE_PID_FILE
+      set_pid_file @config_from_file['galaxy.console.pid-file'] || DEFAULT_CONSOLE_PID_FILE
     end
 
     def user

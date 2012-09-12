@@ -5,8 +5,8 @@ require 'open-uri'
 
 module Galaxy
   class Fetcher
-    def initialize base_url, http_user, http_password, log
-        @base, @http_user, @http_password, @log = base_url, http_user, http_password, log
+    def initialize base_url, http_user, http_password, nexus_repo, log
+      @base, @http_user, @http_password, @nexus_repo, @log = base_url, http_user, http_password, nexus_repo, log
     end
 
     # return path on filesystem to the binary
@@ -17,7 +17,7 @@ module Galaxy
         if core_url.start_with? "nexus:"
           @log.debug("Switching to Nexus mode...")
           core_url = core_url.slice(6..-1)
-          core_url = "#{core_url}/service/local/artifact/maven/redirect?r=public&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
+          core_url = "#{core_url}/service/local/artifact/maven/redirect?r=#{@nexus_repo}&g=#{build.group}&a=#{build.artifact}&v=#{build.version}&e=#{extension}"
         else
           @log.debug("Switching to Maven mode...")
           group_path=build.group.gsub /\./, '/'

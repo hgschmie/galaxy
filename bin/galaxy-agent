@@ -61,6 +61,12 @@ opts = OptionParser.new do |opts|
         command_line_options.slot_environment = slot_environment
     end
 
+    opts.separator "  Nexus deployment"
+
+    opts.on("-n", "--nexus-repo reponame", "Name of the nexus repo to use.") do |nexus_repo|
+        command_line_options.nexus_repo = nexus_repo
+    end
+
     opts.separator "  General Options"
 
     opts.on_tail("-l", "--log LOG", "STDOUT | STDERR | SYSLOG | /path/to/file.log") do |log|
