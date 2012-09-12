@@ -16,7 +16,7 @@ module Galaxy
             raise error_reason
           end
         end
-        
+
         prop_builder = Galaxy::Properties::Builder.new config_uri.nil? ? @repository_base : config_uri, @http_user, @http_password, @logger
 
         build_version = Galaxy::BuildVersion.new_from_options req_build_version, prop_builder, requested_config
@@ -36,8 +36,11 @@ module Galaxy
 
         # Update the slot_info to reflect the new deployment state
         slot_info.update requested_config.config_path, deployer.core_base_for(new_deployment), config_uri, binaries_uri
+
+        @logger.debug("Deploying #{new_deployment}...")
         core_base = deployer.deploy(new_deployment, archive_path, requested_config.config_path)
 
+        @logger.debug("Activating #{new_deployment}...")
         deployer.activate(new_deployment)
         FileUtils.rm(archive_path) if archive_path && File.exists?(archive_path)
 
@@ -50,12 +53,14 @@ module Galaxy
         write_config new_deployment, new_deployment_config
         self.current_deployment_number = new_deployment
 
+        @logger.debug("Announcing #{new_deployment}...")
         announce
+
         return status
       rescue Exception => e
         # Roll slot_info back
         slot_info.update config.config_path, deployer.core_base_for(current_deployment), config_uri, binaries_uri
-        
+
         error_reason = "Unable to become #{requested_config_path}: #{e}"
         @logger.error error_reason
         raise error_reason
@@ -239,7 +244,7 @@ module Galaxy
     # Called by the galaxy 'clear' command
     def clear!
       lock
-      
+
       begin
         stop!
 

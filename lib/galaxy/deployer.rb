@@ -28,7 +28,7 @@ module Galaxy
       core_base = core_base_for(number)
       FileUtils.mkdir_p core_base
 
-      log.info "deploying #{archive} to #{core_base} with config path #{config_path}"
+      @log.info "deploying #{archive} to #{core_base} with config path #{config_path}"
 
       command = "#{Galaxy::HostUtils.tar} -C #{core_base} -zxf #{archive}"
       begin
@@ -95,6 +95,6 @@ module Galaxy
         db.delete_at key
       end
     end
-    
+
   end
 end
