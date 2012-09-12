@@ -16,8 +16,8 @@ module Galaxy
       @persistent_dir = persistent_dir
     end
 
-    # Writes the current state of the world into the 
-    # slot_info file. 
+    # Writes the current state of the world into the
+    # slot_info file.
     def update (config_path, core_base, config_uri = nil, binaries_uri = nil)
       slot_info = OpenStruct.new(:base =>           core_base,
                                  :config_path =>    config_path,

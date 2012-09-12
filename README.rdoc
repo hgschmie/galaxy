@@ -365,8 +365,7 @@ Running the galaxy-agent command with no arguments will display on-line help.
       Options for Start
         -C, --config FILE                Configuration file (overrides GALAXY_CONFIG)
         -i, --host HOST[:PORT]           Hostname this agent manages (default localhost)
-        -m, --machine MACHINE            Physical machine where the agent lives (overrides -M)
-        -M, --machine-file FILE          Filename containing the physical machine name
+        -m, --machine MACHINE            Physical machine where the agent lives
         -c ['http://'|'druby://']HOST[:PORT]
             --console                    Hostname where the console is listening
         -r, --repository URL             Base URL for the repository

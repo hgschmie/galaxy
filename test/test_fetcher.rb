@@ -19,8 +19,8 @@ class TestFetcher < Test::Unit::TestCase
   end
 
   def setup
-    @local_fetcher = Galaxy::Fetcher.new(File.join(File.dirname(__FILE__), "property_data"), nil, nil, Logger.new("/dev/null"))
-    @http_fetcher = Galaxy::Fetcher.new("http://localhost:7777", nil, nil, Logger.new("/dev/null"))
+    @local_fetcher = Galaxy::Fetcher.new(File.join(File.dirname(__FILE__), "property_data"), nil, nil, "public", Logger.new("/dev/null"))
+    @http_fetcher = Galaxy::Fetcher.new("http://localhost:7777", nil, nil, "public", Logger.new("/dev/null"))
 
     webrick_logger =  Logger.new(STDOUT)
     webrick_logger.level = Logger::WARN
@@ -37,14 +37,14 @@ class TestFetcher < Test::Unit::TestCase
     
   def test_local_fetch
     obj = FetchObj.new nil, "foo", "bar"
-    path = @local_fetcher.fetch obj, nil, "properties"
+    path,version = @local_fetcher.fetch obj, nil, "properties"
     assert File.exists?(path)
   end
   
   def test_http_fetch
 
     obj = FetchObj.new nil, "foo", "bar"
-    path = @http_fetcher.fetch obj, nil, "properties"
+    path, version = @http_fetcher.fetch obj, nil, "properties"
     assert File.exists?(path)
   end
 
@@ -52,7 +52,7 @@ class TestFetcher < Test::Unit::TestCase
     assert_raise RuntimeError do
       @server.logger.level = Logger::FATAL
       obj = FetchObj.new nil, "gorple", "fez"
-      path = @http_fetcher.fetch obj, nil, "properties"
+      path, version = @http_fetcher.fetch obj, nil, "properties"
       @server.logger.level = Logger::WARN
     end
   end
@@ -60,7 +60,7 @@ class TestFetcher < Test::Unit::TestCase
   def test_http_group_fetch
 
      obj = FetchObj.new "some.domain", "foo", "bar"
-     path = @http_fetcher.fetch obj, nil, "properties"
+     path, version = @http_fetcher.fetch obj, nil, "properties"
      assert File.exists?(path)
    end
 
@@ -68,8 +68,15 @@ class TestFetcher < Test::Unit::TestCase
      assert_raise RuntimeError do
        @server.logger.level = Logger::FATAL
        obj = FetchObj.new "some.domain", "gorple", "fez"
-       path = @http_fetcher.fetch obj, nil, "properties"
+       path, version = @http_fetcher.fetch obj, nil, "properties"
        @server.logger.level = Logger::WARN
      end
+   end
+   
+   def test_nexus_fetching
+     fetcher = Galaxy::Fetcher.new("nexus:http://localhost:7777", nil, nil, "public", Logger.new("/dev/null"))
+     path, version = fetcher.fetch FetchObj.new "group", "artifact", "version"
+     assert File.exists?(path)
+     assert version == "2000.1"
    end
 end

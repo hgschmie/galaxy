@@ -16,7 +16,7 @@ module Galaxy
             raise error_reason
           end
         end
-        
+
         prop_builder = Galaxy::Properties::Builder.new config_uri.nil? ? @repository_base : config_uri, @http_user, @http_password, @logger
 
         build_version = Galaxy::BuildVersion.new_from_options req_build_version, prop_builder, requested_config
@@ -30,14 +30,23 @@ module Galaxy
 
         stop!
 
-        archive_path = @fetcher.fetch build_version, binaries_uri
+        archive_path,version = @fetcher.fetch build_version, binaries_uri
+        
+        # If the fetcher returned a version, update the build version to match it.
+        if !version.nil?
+          build_version = Galaxy::BuildVersion.new build_version.group, build_version.artifact, version
+          @logger.debug("Changed build version to #{build_version}")
+        end
 
         new_deployment = current_deployment + 1
 
         # Update the slot_info to reflect the new deployment state
         slot_info.update requested_config.config_path, deployer.core_base_for(new_deployment), config_uri, binaries_uri
+
+        @logger.debug("Deploying #{new_deployment}...")
         core_base = deployer.deploy(new_deployment, archive_path, requested_config.config_path)
 
+        @logger.debug("Activating #{new_deployment}...")
         deployer.activate(new_deployment)
         FileUtils.rm(archive_path) if archive_path && File.exists?(archive_path)
 
@@ -45,17 +54,21 @@ module Galaxy
                                                :core_group => build_version.group,
                                                :build => build_version.version,
                                                :core_base => core_base,
+                                               :repository_base => config_uri || @repository_base,
+                                               :binaries_base => binaries_uri || @binaries_base,
                                                :config_path => requested_config.config_path,
                                                :auto_start => true)
         write_config new_deployment, new_deployment_config
         self.current_deployment_number = new_deployment
 
+        @logger.debug("Announcing #{new_deployment}...")
         announce
+
         return status
       rescue Exception => e
         # Roll slot_info back
         slot_info.update config.config_path, deployer.core_base_for(current_deployment), config_uri, binaries_uri
-        
+
         error_reason = "Unable to become #{requested_config_path}: #{e}"
         @logger.error error_reason
         raise error_reason
@@ -106,6 +119,8 @@ module Galaxy
                                  :core_group => config.core_group,
                                  :build => config.build,
                                  :core_base => config.core_base,
+                                 :repository_base => config_uri,
+                                 :binaries_base => binaries_uri,
                                  :config_path => requested_config.config_path)
 
         write_config(current_deployment, @config)
@@ -131,7 +146,10 @@ module Galaxy
         if current_deployment_number > 0
           write_config current_deployment_number, OpenStruct.new()
           @core_base = deployer.rollback current_deployment_number
-          self.current_deployment_number = current_deployment_number - 1
+          new_deployment = current_deployment_number - 1
+          self.current_deployment_number = new_deployment
+          @config = read_config new_deployment
+          slot_info.update @config.config_path, deployer.core_base_for(new_deployment), @config.repository_base, @config.binaries_base
         end
 
         announce
@@ -239,13 +257,15 @@ module Galaxy
     # Called by the galaxy 'clear' command
     def clear!
       lock
-      
+
       begin
         stop!
 
         @logger.debug "Clearing core"
         deployer.deactivate current_deployment_number
-        self.current_deployment_number = current_deployment_number + 1
+        new_deployment = current_deployment_number + 1
+        self.current_deployment_number = new_deployment
+        slot_info.update nil, deployer.core_base_for(new_deployment)
 
         announce
         return status
