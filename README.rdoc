@@ -210,15 +210,16 @@ Mongrel gem.
 
 You can run a Gonsole and an agent locally. In two different terminals, run:
 
-  rake run:gonsole
-  rake run:gagent
+  % rake run:gonsole
+  % rake run:gagent
 
-You can now use the command line client to interact with theses:
+You can now use the command line client to interact with them:
 
-  galaxy > ruby -Ilib bin/galaxy show-agent -c localhost
-  localhost            online   3.0.0
-  galaxy > ruby -Ilib bin/galaxy show-console -c localhost
-  druby://localhost:4440  http://Pierre-Alexandre-Meyers-MacBook-Pro.local:4442   localhost   -   10
+  % ruby -Ilib bin/galaxy show-agent -c localhost
+local_test local_group online   3.6.3beta 
+
+  % ruby -Ilib bin/galaxy show-console -c localhost
+local_test local_group -                                             unknown    -                                        -                    testbox.local -               online  
 
 
 == Getting help
@@ -226,7 +227,7 @@ You can now use the command line client to interact with theses:
 Running the galaxy command with -help will display on-line help.
 
 
-    xncore@prod1:~: galaxy -help
+    % galaxy -help
     galaxy [options] <command> [args]
 
     Options:

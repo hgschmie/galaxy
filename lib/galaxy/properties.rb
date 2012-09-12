@@ -54,7 +54,7 @@ module Galaxy
           end
           history
         end
-        @log.debug props.inspect
+        @log.debug "Built properties are #{props.inspect}"
         props
       end
 

@@ -96,11 +96,20 @@ module Galaxy
       @version = version
     end
 
-    def self.new_from_options build_version
+    def self.new_from_options build_version, prop_builder = nil, config = nil
+      if !prop_builder.nil?
+        build_properties = prop_builder.build(config.config_path, "build.properties")
+
+        group = build_properties['group']
+        artifact = build_properties['type'] || build_properties['artifact']
+        version = build_properties['build'] || build_properties['version']
+      end
+
       if !build_version.nil?
         elements = build_version.split ':'
-        if elements.size == 2
-          group = nil
+        if elements.size == 1
+          version = elements[0]
+        elsif elements.size == 2
           artifact = elements[0]
           version = elements[1]
         elsif elements.size == 3

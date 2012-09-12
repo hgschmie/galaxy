@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 #
 # Writes a set of configuration files and scripts to create a local galaxy installation.
 #
@@ -6,6 +6,7 @@
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'tmpdir'
 
 # Maximum number of agents that can be created
 max_agent_count = 20
@@ -66,6 +67,7 @@ File.open("script.erb") { |file|
   @script_template = ERB.new file.read
 }
 
+@home = ENV['HOME']
 @user = @config['user'] || ENV['USER']
 
 if @user.nil?
@@ -82,7 +84,7 @@ if @slots.length > max_agent_count
   raise("More than #{max_agent_count} slots defined, check the resource allocation first!")
 end
 
-@base = @config['base']
+@base = @config['base'] || File.join(@home, "galaxy")
 
 if @base.nil?
   raise("No base directory given!")
@@ -104,6 +106,8 @@ end
 # derived configuration
 #
 
+@tmp_dir = Dir.mktmpdir("galaxy-prep")
+@persistent_dir = File.join(@base, "persistent")
 @config_dir = File.join(@base, "config")
 @deploy_dir = File.join(@base, "deploy")
 @host_prefix = @hostname.split('.')[0]
@@ -140,6 +144,7 @@ internal_matches_external = @internal_ip == @external_ip
 create_dir @base
 create_dir @config_dir
 create_dir @deploy_dir
+create_dir @persistent_dir
 
 puts "Created #{@base} as galaxy base directory."
 
@@ -150,7 +155,8 @@ global_ports = []
 
 # prep each agent slot
 
-@slots.each do |@slot|
+@slots.each do |slot|
+    @slot = slot
     http_port = @rc_http_port.get
     https_port = @rc_https_port.get
 
@@ -168,17 +174,17 @@ global_ports = []
     (0...global_ports.length).each { |x| slot_info["global_port_#{x}"] = global_ports[x] }
     (0...private_ports_per_slot).each { |x| slot_info["private_port_#{x}"] = @rc_private_ports.get }
 
-    File.open(File.join(@config_dir, "slotinfo-#{@slot}"), "w") { |file|
+    File.open(File.join(@config_dir, "slotinfo-#{slot}"), "w") { |file|
         file.write(YAML.dump(slot_info))
     }
 
-    FileUtils.mkdir_p File.join(@deploy_dir, @slot)
-    FileUtils.mkdir_p File.join(@config_dir, "data-#{@slot}")
+    FileUtils.mkdir_p File.join(@deploy_dir, slot)
+    FileUtils.mkdir_p File.join(@config_dir, "data-#{slot}")
 
-    File.open(File.join(@config_dir, "agent-#{@slot}.conf"), "w") { |file|
+    File.open(File.join(@config_dir, "agent-#{slot}.conf"), "w") { |file|
         file.write @agent_template.result
     }
-    puts "Agent #{@slot} complete"
+    puts "Agent #{slot} complete"
 end
 
 # write main configuration

@@ -14,3 +14,5 @@ target/
 .rvmrc
 .idea
 Gemfile.lock
+.project
+.settings

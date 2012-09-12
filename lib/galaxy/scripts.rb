@@ -10,11 +10,10 @@ require 'galaxy/repository'
 #
 module Galaxy
   class ScriptSupport
-    attr_accessor :base, :config_path, :repository, :binaries, :machine, :agent_id, :agent_group
+    attr_accessor :base, :config_path, :repository, :binaries, :machine, :agent_id, :agent_group, :tmp_dir, :persistent_dir
     attr_reader :rest, :slot_info, :env
 
-
-    def initialize args, & block
+    def initialize (args, & block)
 
       @rest = OptionParser.new do |opts|
         opts.on("--slot-info SLOT_INFO") { |arg| @slot_info = arg }
@@ -32,18 +31,23 @@ module Galaxy
       @machine = @slot_data.machine
       @agent_id = @slot_data.agent_id
       @agent_group = @slot_data.agent_group
+      @tmp_dir = @slot_data.tmp_dir
+      @persistent_dir = @slot_data.persistent_dir
+
       @env = @slot_data.env
       # Wrap @env in an OpenStruct unless it already is one to allow lookups by key name using "."
       @env = OpenStruct.new(@slot_data.env) unless @env.is_a? OpenStruct
 
-      raise "No base given"           if @slot_data.base.nil?
-      raise "No config path given"    if @slot_data.config_path.nil?
-      raise "No repository url given" if @slot_data.repository.nil?
-      raise "No binaries url given"   if @slot_data.binaries.nil?
-      raise "No machine given"        if @slot_data.machine.nil?
-      raise "No agent id given"       if @slot_data.agent_id.nil?
-      raise "No agent group given"    if @slot_data.agent_group.nil?
-      raise "No environment given"    if @slot_data.env.nil?
+      raise "No base given"              if @slot_data.base.nil?
+      raise "No config path given"       if @slot_data.config_path.nil?
+      raise "No repository url given"    if @slot_data.repository.nil?
+      raise "No binaries url given"      if @slot_data.binaries.nil?
+      raise "No machine given"           if @slot_data.machine.nil?
+      raise "No agent id given"          if @slot_data.agent_id.nil?
+      raise "No agent group given"       if @slot_data.agent_group.nil?
+      raise "No environment given"       if @slot_data.env.nil?
+      raise "No tmp folder given"        if @slot_data.tmp_dir.nil?
+      raise "No persistent folder given" if @slot_data.persistent_dir.nil?
     end
 
     def load_slot_info
@@ -60,7 +64,7 @@ module Galaxy
               end
               return data
             end
-            puts "Expected a serialized OpenStruct, found something else!"
+            STDERR.puts "Expected a serialized OpenStruct, found something else!"
           end
         rescue Errno::ENOENT
         end
@@ -70,10 +74,16 @@ module Galaxy
 
     # This splits /env/version/type into "" "env" "version" "type". So the values are 1-3, not 0-2.
     def config
-      config = config_path.split("/")
-      unless config.length == 4
+      cfg = config_path.split("/")
+      if cfg.length < 4
         raise "Invalid configuration path: #{config_path}"
       end
+      
+      config = []
+      config[1] = cfg[1]
+      config[2] = cfg[2]
+      config[3] = cfg[3..-1].join('/')
+
       config
     end
     
@@ -98,6 +108,8 @@ module Galaxy
       information["env.machine"]         = machine
       information["env.slot_info"]       = slot_info
       information["env.config_location"] = config_location
+      information["env.tmp_dir"]         = tmp_dir
+      information["env.persistent_dir"]  = persistent_dir
 
       information["internal.ip"]         = env.internal_ip
       information["internal.port.http"]  = env.internal_http   || 80
@@ -165,6 +177,35 @@ module Galaxy
       }
 
       jvm_opts
+    end
+
+    def find_installed_jdks
+        uname=`uname`.chomp
+      if uname.nil?
+        STDERR.puts "Could not determine platform type, falling back to default!"
+        return nil
+      end
+      
+      installed_jdks={}
+      if uname == 'Darwin'
+        for i in (6..8)
+          version = "1.#{i}.0"
+          jdk_home=`/usr/libexec/java_home -v #{version} 2> /dev/null`.chomp
+          if $?.exitstatus == 0
+            installed_jdks[version] = jdk_home
+          end
+        end
+      elsif uname == 'Linux'
+        for i in (6..8)
+          version = "1.#{i}.0"
+          path = "/usr/lib/jvm/java-#{version}"
+          if File.exists?(path)
+            installed_jdks[version] = path
+          end
+        end
+      end
+         
+      installed_jdks
     end
 
   end

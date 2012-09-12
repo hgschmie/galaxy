@@ -30,8 +30,8 @@ module Galaxy
 
     include Galaxy::AgentRemoteApi
 
-    def initialize agent_id, agent_group, url, machine, announcements_url, repository_base, deploy_dir,
-      data_dir, binaries_base, http_user, http_password, slot_environment, log, log_level, announce_interval
+    def initialize(agent_id, agent_group, url, machine, announcements_url, repository_base, deploy_dir,
+      data_dir, binaries_base, http_user, http_password, slot_environment, tmp_dir, persistent_dir, log, log_level, announce_interval)
       @drb_url = url
       @agent_id = agent_id
       @agent_group = agent_group
@@ -40,6 +40,8 @@ module Galaxy
       @http_password = http_password
       @repository_base = repository_base
       @binaries_base = binaries_base
+      @tmp_dir = tmp_dir
+      @persistent_dir = persistent_dir
 
       @logger = Galaxy::Log::Glogger.new log
       @logger.log.level = log_level
@@ -58,10 +60,24 @@ module Galaxy
       FileUtils.mkdir_p(deploy_dir) unless File.exists? deploy_dir
       FileUtils.mkdir_p(data_dir) unless File.exists? data_dir
 
+      if @tmp_dir.nil?
+        @tmp_dir = File.join(data_dir, "tmp")
+        @logger.warn("no tmp dir set, using #{@tmp_dir}")
+      end
+
+      if @persistent_dir.nil?
+        @persistent_dir = File.join(data_dir, "persistent")
+        @logger.warn("no persistent dir set, using #{@persistent_dir}")
+      end
+
+      FileUtils.mkdir_p(@tmp_dir) unless File.exists? @tmp_dir
+      FileUtils.mkdir_p(@persistent_dir) unless File.exists? @persistent_dir
+
+
       @announce_interval = announce_interval
       @repository = Galaxy::Repository.new repository_base, @logger
       @db = Galaxy::DB.new data_dir
-      @slot_info = Galaxy::SlotInfo.new @db, repository_base, binaries_base, @logger, @machine, @agent_id, @agent_group, @slot_environment
+      @slot_info = Galaxy::SlotInfo.new @db, repository_base, binaries_base, @logger, @machine, @agent_id, @agent_group, @slot_environment, @tmp_dir, @persistent_dir
       @deployer = Galaxy::Deployer.new repository_base, binaries_base, deploy_dir, @logger, @slot_info
       @fetcher = Galaxy::Fetcher.new binaries_base, @http_user, @http_password, @logger
       @starter = Galaxy::Starter.new @logger, @db
@@ -93,7 +109,7 @@ module Galaxy
     # deployment. This is stored alongside the 
     # actual slot data for later use.
     #
-    def load_slot_environment slot_environment
+    def load_slot_environment(slot_environment)
       unless slot_environment.nil? 
         begin
           File.open slot_environment, "r" do |f|
@@ -155,7 +171,7 @@ module Galaxy
       end
     end
 
-    def read_config deployment_number
+    def read_config(deployment_number)
       config = nil
       deployment_number = deployment_number.to_s
       data = @db[deployment_number]
@@ -178,7 +194,7 @@ module Galaxy
       config
     end
 
-    def write_config deployment_number, config
+    def write_config(deployment_number, config)
       deployment_number = deployment_number.to_s
       @db[deployment_number] = YAML.dump config
     end
@@ -188,7 +204,7 @@ module Galaxy
       @db['deployment'].to_i
     end
 
-    def current_deployment_number= deployment_number
+    def current_deployment_number= (deployment_number)
       deployment_number = deployment_number.to_s
       @db['deployment'] = deployment_number
       @config = read_config deployment_number
@@ -254,10 +270,11 @@ module Galaxy
         end
       end
 
-      repository = args[:repository] || "/tmp/galaxy-agent-properties"
-      deploy_dir = args[:deploy_dir] || "/tmp/galaxy-agent-deploy"
-      data_dir = args[:data_dir] || "/tmp/galaxy-agent-data"
-      binaries = args[:binaries] || "http://localhost:8000"
+      raise "Repository must be configured" if args[:repository].nil?
+      raise "Deploy directory must be configured" if args[:deploy_dir].nil?
+      raise "Data directory must be configured" if args[:data_dir].nil?
+      raise "Binaries location must be configured" if args[:binaries].nil?
+
       log = args[:log] || "STDOUT"
       log_level = args[:log_level] || Logger::INFO
       announce_interval = args[:announce_interval] || 60
@@ -267,13 +284,15 @@ module Galaxy
                         agent_url,
                         machine,
                         console_url,
-                        repository,
-                        deploy_dir,
-                        data_dir,
-                        binaries,
+                        args[:repository],
+                        args[:deploy_dir],
+                        args[:data_dir],
+                        args[:binaries],
                         args[:http_user],
                         args[:http_password],
                         args[:slot_environment],
+                        args[:tmp_dir],
+                        args[:persistent_dir],
                         log,
                         log_level,
                         announce_interval

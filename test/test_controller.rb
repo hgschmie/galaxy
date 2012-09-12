@@ -23,7 +23,7 @@ class TestController < Test::Unit::TestCase
     current_number = 1
     config ="/env/version/type"
 
-    @slot_info = Galaxy::SlotInfo.new @db, "http://repository/base", "http://binaries/base", log, "machine", "slot", "group"
+    @slot_info = Galaxy::SlotInfo.new @db, "http://repository/base", "http://binaries/base", log, "machine", "slot", "group", {}, "/tmp/galaxy", "/tmp/persist"
 
     @deployer = Galaxy::Deployer.new "http://repository/base", "http://binaries/base", @path, log, @slot_info
     @slot_info.update config, @deployer.core_base_for(current_number)

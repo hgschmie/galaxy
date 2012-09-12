@@ -23,6 +23,26 @@ module Galaxy
     end
   end
 
+  class ThinServer < Thin::Server
+    def initialize(log, *args, &block)
+      super *args, &block
+      @log = log
+    end
+
+    def log(msg=nil)
+      @log.info(msg)
+    end
+    def debug(msg=nil)
+      @log.debug(msg) if Thin::Logging.debug?
+    end
+    def trace(msg=nil)
+      @log.debug(msg) if Thin::Logging.trace?
+    end
+    def log_error(err=$!)
+      @log.error(err)
+    end
+  end
+
   class HTTPServer
     def initialize(url, console, callbacks=nil, log=nil)
       @log = log || Logger.new(STDOUT)
@@ -30,10 +50,16 @@ module Galaxy
       app = Rack::URLMap.new(
         '/' => ReceiveAnnouncement.new(console),
         '/status' => AnnouncementStatus.new)
-      
+
       # Create server
       begin
-        @server = Thin::Server.new('0.0.0.0', get_port(url), app)
+        @log.info("URL: #{url}")
+        @server = ThinServer.new(@log,
+                                 get_host(url),
+                                 get_port(url),
+                                 app,
+                                 { :signals => false })
+
       rescue Exception => err
         msg = "HTTP server initialization error: #{err}"
         @log.error msg
@@ -64,11 +90,23 @@ module Galaxy
         @log.error msg
         raise msg
       end
+      @log.debug("Port: #{port}")
       port
+    end
+
+    # parse the host from the given url string
+    def get_host(url)
+      last = url.count(':')
+      raise "malformed url: '#{url}'." if last==0 || last>2
+      host = url.split(':')[last-1]
+      host = host.slice(%r[[^\/]+])
+      @log.debug("Host: #{host}")
+      host
     end
 
     def shutdown
       if @server
+        @log.info("Shutting down Thin")
         @server.stop!
         @thread.join
         @server = @thread = nil

@@ -22,11 +22,11 @@ module Galaxy
       @@transports.select { |t| t.can_handle? url }.first or raise "No handler found for #{url}"
     end
 
-    def initialize pattern
+    def initialize(pattern)
       @pattern = pattern
     end
 
-    def can_handle? url
+    def can_handle?(url)
       @pattern =~ url
     end
 
@@ -43,21 +43,22 @@ module Galaxy
       @servers = {}
     end
 
-    def locate url, log=nil
+    def locate(url, log=nil)
+      log.debug("Locating #{url} on DRB") unless log.nil?
       DRbObject.new_with_uri url
     end
 
-    def publish url, object, log=nil
+    def publish(url, object, log=nil)
       log.debug("Starting DRB for #{url}") unless log.nil?
       @servers[url] = DRb.start_service url, object
     end
 
-    def unpublish url
+    def unpublish(url)
       @servers[url].stop_service
       @servers[url] = nil
     end
 
-    def join url
+    def join(url)
       @servers[url].thread.join
     end
   end
@@ -68,19 +69,19 @@ module Galaxy
       @servers = {}
     end
 
-    def locate url, log=nil
+    def locate(url, log=nil)
       @servers[url]
     end
 
-    def publish url, object, log=nil
+    def publish(url, object, log=nil)
       @servers[url] = object
     end
 
-    def unpublish url
+    def unpublish(url)
       @servers[url] = nil
     end
 
-    def join url
+    def join(url)
       raise "Not yet implemented"
     end
   end
@@ -104,31 +105,31 @@ module Galaxy
 
     # get object (ie announce fn)
     # - install announce() callback
-    def locate url, log=nil
+    def locate(url, log=nil)
       #DRbObject.new_with_uri url
       HTTPAnnouncementSender.new url, log
     end
 
     # make object available (ie console)
-    def publish url, obj, log=nil
+    def publish(url, obj, log=nil)
       if !obj.respond_to?('process_get') || !obj.respond_to?('process_post')
         raise TypeError.new("#{obj.class.name} doesn't contain 'process_post' and 'process_get' methods")
       end
       return @servers[url] if @servers[url]
       begin
-         @servers[url] = Galaxy::HTTPServer.new(url, obj)
+         @servers[url] = Galaxy::HTTPServer.new(url, obj, log)
       rescue NameError
          raise NameError.new("Unable to create the http server.")
       end
       return @servers[url]
     end
 
-    def unpublish url
+    def unpublish(url)
       @servers[url].shutdown
       @servers[url] = nil
     end
 
-    def join url
+    def join(url)
       #nop
     end
   end
