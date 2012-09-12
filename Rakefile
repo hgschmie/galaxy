@@ -64,7 +64,7 @@ PWD = File.expand_path(File.dirname(__FILE__))
 RUBY = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
 
 namespace :run do
-  desc "Run a Gonsole locally"
+  desc "Run a Galaxy Console locally"
   task :gonsole do
     # Note that -i localhost is needed. Otherwise the DRb server will bind to the
     # hostname, which can be as ugly as "Pierre-Alexandre-Meyers-MacBook-Pro.local"
@@ -75,7 +75,7 @@ namespace :run do
            "--ping-interval", "10", "-f", "-l", "STDOUT", "-L", "DEBUG", "-v")
   end
 
-  desc "Run a Gagent locally"
+  desc "Run a Galaxy Agent locally"
   task :gagent do
     system(RUBY, "-I", File.join(PWD, "lib"),
            File.join(PWD, "bin", "galaxy-agent"), "--start",
